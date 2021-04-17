@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates.
  *
  * All rights reserved.
  *
@@ -27,34 +27,39 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.oracle.truffle.llvm.runtime.nodes.asm.syscall;
+#include <sys/stat.h>
+#include <sys/types.h>
 
-import com.oracle.truffle.api.dsl.Specialization;
-import com.oracle.truffle.llvm.runtime.memory.LLVMSyscallOperationNode;
-import com.oracle.truffle.llvm.runtime.pointer.LLVMNativePointer;
-import com.oracle.truffle.llvm.runtime.pointer.LLVMPointer;
+struct stat64;
 
-public abstract class LLVMAMD64SyscallRtSigprocmaskNode extends LLVMSyscallOperationNode {
+int __sulong_stat(const char *path, struct stat *buf) {
+    return stat(path, buf);
+}
 
-    /**
-     * @param how
-     * @param set
-     * @param oldset
-     * @param sigsetsize
-     * @see #executeGeneric(Object, Object, Object, Object, Object, Object)
-     */
-    @Specialization
-    protected long doI64(long how, LLVMPointer set, LLVMPointer oldset, long sigsetsize) {
-        return -LLVMAMD64Error.ENOSYS;
-    }
+int __sulong_fstat(int fd, struct stat *buf) {
+    return fstat(fd, buf);
+}
 
-    @Override
-    public final String getName() {
-        return "rt_sigprocmask";
-    }
+int __sulong_lstat(const char *path, struct stat *buf) {
+    return lstat(path, buf);
+}
 
-    @Specialization
-    protected long doI64(long how, long set, long oldset, long sigsetsize) {
-        return doI64(how, LLVMNativePointer.create(set), LLVMNativePointer.create(oldset), sigsetsize);
-    }
+int __sulong_fstatat(int fd, const char *path, struct stat *buf, int flag) {
+    return fstatat(fd, path, buf, flag);
+}
+
+int __sulong_stat64(const char *path, struct stat64 *buf) {
+    return stat64(path, buf);
+}
+
+int __sulong_fstat64(int fd, struct stat64 *buf) {
+    return fstat64(fd, buf);
+}
+
+int __sulong_lstat64(const char *path, struct stat64 *buf) {
+    return lstat64(path, buf);
+}
+
+int __sulong_fstatat64(int fd, const char *path, struct stat64 *buf, int flag) {
+    return fstatat64(fd, path, buf, flag);
 }
