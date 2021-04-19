@@ -260,7 +260,7 @@ public class AArch64Move {
             if (state != null) {
                 int implicitExceptionPosition = prePosition;
                 // Adjust implicit exception position if this ldr/str has been merged to ldp/stp.
-                if (kind.isInteger() && prePosition == masm.position() && masm.isImmLoadStoreMerged()) {
+                if (prePosition == masm.position() && masm.isImmLoadStoreMerged()) {
                     implicitExceptionPosition = prePosition - 4;
                     if (crb.isImplicitExceptionExist(implicitExceptionPosition)) {
                         return;
@@ -778,7 +778,7 @@ public class AArch64Move {
             } else {
                 // if ptr is null it still has to be null after compression
                 masm.cmp(64, ptr, 0);
-                masm.cmov(64, resultRegister, ptr, base, AArch64Assembler.ConditionFlag.NE);
+                masm.csel(64, resultRegister, ptr, base, AArch64Assembler.ConditionFlag.NE);
                 masm.sub(64, resultRegister, resultRegister, base);
                 if (encoding.hasShift()) {
                     masm.lshr(64, resultRegister, resultRegister, encoding.getShift());
@@ -852,7 +852,7 @@ public class AArch64Move {
         @Override
         protected final void emitConversion(Register resultRegister, Register inputRegister, Register nullRegister, AArch64MacroAssembler masm) {
             masm.cmp(64, inputRegister, nullRegister);
-            masm.cmov(64, resultRegister, zr, inputRegister, AArch64Assembler.ConditionFlag.EQ);
+            masm.csel(64, resultRegister, zr, inputRegister, AArch64Assembler.ConditionFlag.EQ);
         }
     }
 
@@ -866,7 +866,7 @@ public class AArch64Move {
         @Override
         protected final void emitConversion(Register resultRegister, Register inputRegister, Register nullRegister, AArch64MacroAssembler masm) {
             masm.cmp(64, inputRegister, zr);
-            masm.cmov(64, resultRegister, nullRegister, inputRegister, AArch64Assembler.ConditionFlag.EQ);
+            masm.csel(64, resultRegister, nullRegister, inputRegister, AArch64Assembler.ConditionFlag.EQ);
         }
     }
 
