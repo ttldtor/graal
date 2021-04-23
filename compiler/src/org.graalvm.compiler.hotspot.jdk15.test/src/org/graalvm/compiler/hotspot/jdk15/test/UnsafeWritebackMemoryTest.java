@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,42 +22,33 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.graalvm.compiler.core.test;
+package org.graalvm.compiler.hotspot.jdk15.test;
 
-import org.graalvm.compiler.phases.OptimisticOptimizations;
+import org.graalvm.compiler.replacements.test.MethodSubstitutionTest;
+import org.graalvm.compiler.test.AddExports;
+import org.junit.Assume;
 import org.junit.Test;
 
-public class MergeCanonicalizerTest extends GraalCompilerTest {
+import jdk.internal.misc.Unsafe;
+import jdk.vm.ci.meta.ResolvedJavaMethod;
 
-    /**
-     * These tests assume all code paths are reachable so disable profile based dead code removal.
-     */
-    @Override
-    protected OptimisticOptimizations getOptimisticOptimizations() {
-        return OptimisticOptimizations.ALL.remove(OptimisticOptimizations.Optimization.RemoveNeverExecutedCode);
-    }
-
-    public static int staticField;
-
-    private int field;
+/**
+ * Tests intrinsics for CPU cache management methods added to Unsafe by JEP 352.
+ */
+@AddExports("java.base/jdk.internal.misc")
+public class UnsafeWritebackMemoryTest extends MethodSubstitutionTest {
 
     @Test
-    public void testSplitReturn() {
-        test("testSplitReturnSnippet", 2);
-    }
-
-    public int testSplitReturnSnippet(int b) {
-        int v;
-        if (b < 0) {
-            staticField = 1;
-            v = 10;
-        } else {
-            staticField = 2;
-            v = 20;
+    public void test() {
+        Assume.assumeTrue(Unsafe.isWritebackEnabled());
+        Unsafe unsafe = Unsafe.getUnsafe();
+        ResolvedJavaMethod method = getResolvedJavaMethod(Unsafe.class, "writebackMemory");
+        final long size = 8 * 1024;
+        final long address = unsafe.allocateMemory(size);
+        try {
+            test(method, unsafe, address, size);
+        } finally {
+            unsafe.freeMemory(address);
         }
-        int i = field;
-        i = field + i;
-        return v;
     }
-
 }

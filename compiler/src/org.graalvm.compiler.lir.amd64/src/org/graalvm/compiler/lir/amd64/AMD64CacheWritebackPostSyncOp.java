@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,42 +22,33 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.graalvm.compiler.core.test;
 
-import org.graalvm.compiler.phases.OptimisticOptimizations;
-import org.junit.Test;
+package org.graalvm.compiler.lir.amd64;
 
-public class MergeCanonicalizerTest extends GraalCompilerTest {
+import org.graalvm.compiler.asm.amd64.AMD64MacroAssembler;
+import org.graalvm.compiler.lir.LIRInstructionClass;
+import org.graalvm.compiler.lir.asm.CompilationResultBuilder;
 
-    /**
-     * These tests assume all code paths are reachable so disable profile based dead code removal.
-     */
+/**
+ * Implements {@code jdk.internal.misc.Unsafe.writebackPostSync0(long)}.
+ */
+public final class AMD64CacheWritebackPostSyncOp extends AMD64LIRInstruction {
+    public static final LIRInstructionClass<AMD64CacheWritebackPostSyncOp> TYPE = LIRInstructionClass.create(AMD64CacheWritebackPostSyncOp.class);
+
+    public AMD64CacheWritebackPostSyncOp() {
+        super(TYPE);
+    }
+
     @Override
-    protected OptimisticOptimizations getOptimisticOptimizations() {
-        return OptimisticOptimizations.ALL.remove(OptimisticOptimizations.Optimization.RemoveNeverExecutedCode);
-    }
+    public void emitCode(CompilationResultBuilder crb, AMD64MacroAssembler masm) {
+        boolean optimized = masm.supportsCPUFeature("FLUSHOPT");
+        boolean noEvict = masm.supportsCPUFeature("CLWB");
 
-    public static int staticField;
-
-    private int field;
-
-    @Test
-    public void testSplitReturn() {
-        test("testSplitReturnSnippet", 2);
-    }
-
-    public int testSplitReturnSnippet(int b) {
-        int v;
-        if (b < 0) {
-            staticField = 1;
-            v = 10;
-        } else {
-            staticField = 2;
-            v = 20;
+        // pick the correct implementation
+        if (optimized || noEvict) {
+            // need an sfence for post flush when using clflushopt or clwb
+            // otherwise no need for any synchroniaztion
+            masm.sfence();
         }
-        int i = field;
-        i = field + i;
-        return v;
     }
-
 }

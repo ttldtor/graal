@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,42 +22,30 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.graalvm.compiler.core.test;
 
-import org.graalvm.compiler.phases.OptimisticOptimizations;
-import org.junit.Test;
+package org.graalvm.compiler.lir.amd64;
 
-public class MergeCanonicalizerTest extends GraalCompilerTest {
+import static org.graalvm.compiler.lir.LIRInstruction.OperandFlag.COMPOSITE;
 
-    /**
-     * These tests assume all code paths are reachable so disable profile based dead code removal.
-     */
+import org.graalvm.compiler.asm.amd64.AMD64MacroAssembler;
+import org.graalvm.compiler.lir.LIRInstructionClass;
+import org.graalvm.compiler.lir.asm.CompilationResultBuilder;
+
+/**
+ * Implements {@code jdk.internal.misc.Unsafe.writeback0(long)}.
+ */
+public final class AMD64CacheWritebackOp extends AMD64LIRInstruction {
+    public static final LIRInstructionClass<AMD64CacheWritebackOp> TYPE = LIRInstructionClass.create(AMD64CacheWritebackOp.class);
+
+    @Alive({COMPOSITE}) protected AMD64AddressValue address;
+
+    public AMD64CacheWritebackOp(AMD64AddressValue address) {
+        super(TYPE);
+        this.address = address;
+    }
+
     @Override
-    protected OptimisticOptimizations getOptimisticOptimizations() {
-        return OptimisticOptimizations.ALL.remove(OptimisticOptimizations.Optimization.RemoveNeverExecutedCode);
+    public void emitCode(CompilationResultBuilder crb, AMD64MacroAssembler masm) {
+        masm.clflush(address.toAddress());
     }
-
-    public static int staticField;
-
-    private int field;
-
-    @Test
-    public void testSplitReturn() {
-        test("testSplitReturnSnippet", 2);
-    }
-
-    public int testSplitReturnSnippet(int b) {
-        int v;
-        if (b < 0) {
-            staticField = 1;
-            v = 10;
-        } else {
-            staticField = 2;
-            v = 20;
-        }
-        int i = field;
-        i = field + i;
-        return v;
-    }
-
 }
