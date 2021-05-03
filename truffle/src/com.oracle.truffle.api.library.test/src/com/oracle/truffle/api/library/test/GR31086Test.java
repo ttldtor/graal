@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,48 +38,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.nfi.test.interop;
+package com.oracle.truffle.api.library.test;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.interop.ArityException;
+import com.oracle.truffle.api.dsl.GenerateUncached;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.library.GenerateLibrary;
+import com.oracle.truffle.api.library.GenerateLibrary.DefaultExport;
+import com.oracle.truffle.api.library.Library;
 
-@ExportLibrary(InteropLibrary.class)
-public class TestCallback implements TruffleObject {
+@SuppressWarnings({"unused", "static-method"})
+public class GR31086Test {
 
-    public interface Function {
-
-        Object call(Object... args);
+    @GenerateLibrary
+    @DefaultExport(MyDefaultExport.class)
+    public abstract static class GR31086TestLib extends Library {
+        public abstract String m0(Object receiver);
     }
 
-    private final int arity;
-    private final Function function;
-
-    public TestCallback(int arity, Function function) {
-        this.arity = arity;
-        this.function = function;
-    }
-
-    @ExportMessage
-    boolean isExecutable() {
-        return true;
-    }
-
-    @TruffleBoundary
-    @ExportMessage
-    Object execute(Object... args) throws ArityException {
-        if (args.length == arity) {
-            Object ret = function.call(args);
-            if (ret == null) {
-                return new NullObject();
-            } else {
-                return ret;
-            }
-        } else {
-            throw ArityException.create(arity, arity, args.length);
+    /*
+     * This test verifies that the receiver type SubObject is accepted even though it exports
+     * libraries on its own. This is not allowed for dynamic dispatched types, but is allowed for
+     * builtin default exports.
+     */
+    @ExportLibrary(receiverType = SubObject.class, value = GR31086TestLib.class)
+    @GenerateUncached
+    public static class MyDefaultExport {
+        @ExportMessage
+        static String m0(SubObject receiver) {
+            return null;
         }
     }
+
+    @ExportLibrary(InteropLibrary.class)
+    public static class BaseObject implements TruffleObject {
+
+        @ExportMessage
+        final boolean isString() {
+            return true;
+        }
+
+        @ExportMessage
+        final String asString() throws UnsupportedMessageException {
+            return null;
+        }
+
+    }
+
+    public static class SubObject extends BaseObject {
+    }
+
 }

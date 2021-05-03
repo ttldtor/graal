@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2020, Oracle and/or its affiliates.
+ * Copyright (c) 2019, 2021, Oracle and/or its affiliates.
  *
  * All rights reserved.
  *
@@ -27,45 +27,39 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.oracle.truffle.llvm.tests.interop.values;
+package com.oracle.truffle.llvm.toolchain.launchers.windows;
 
-import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
-import com.oracle.truffle.api.interop.ArityException;
-import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.library.ExportLibrary;
-import com.oracle.truffle.api.library.ExportMessage;
-import com.oracle.truffle.llvm.tests.interop.values.TestCallback.Function;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-@ExportLibrary(InteropLibrary.class)
-public class TestConstructor implements TruffleObject {
+import com.oracle.truffle.llvm.toolchain.launchers.common.ClangLike;
+import com.oracle.truffle.llvm.toolchain.launchers.common.Driver;
 
-    private final int arity;
-    private final Function constructor;
+public final class WindowsLinker extends Driver {
 
-    public TestConstructor(int arity, Function constructor) {
-        this.arity = arity;
-        this.constructor = constructor;
+    public static final String LLD_LINK = "lld-link.exe";
+
+    private WindowsLinker() {
+        super(LLD_LINK);
     }
 
-    @TruffleBoundary
-    Object call(Object... args) throws ArityException {
-        if (args.length == arity) {
-            Object ret = constructor.call(args);
-            return ret;
-        } else {
-            throw ArityException.create(arity, arity, args.length);
-        }
+    public static List<String> getLinkerFlags() {
+        return Arrays.asList("-mllvm:-lto-embed-bitcode", "-opt:lldlto=0", "-debug:dwarf");
     }
 
-    @ExportMessage
-    boolean isInstantiable() {
-        return true;
+    public static void link(String[] args) {
+        new WindowsLinker().doLink(args);
     }
 
-    @ExportMessage
-    Object instantiate(Object[] arguments) throws ArityException {
-        Object res = call(arguments);
-        return res == null ? new NullValue() : res;
+    private void doLink(String[] args) {
+        List<String> sulongArgs = new ArrayList<>();
+        sulongArgs.add(exe);
+        sulongArgs.add("-libpath:" + getSulongHome().resolve(ClangLike.NATIVE_PLATFORM).resolve("lib"));
+        sulongArgs.addAll(WindowsLinker.getLinkerFlags());
+        List<String> userArgs = Arrays.asList(args);
+        boolean verbose = userArgs.contains("-verbose");
+        runDriver(sulongArgs, userArgs, verbose, false, false);
     }
+
 }
