@@ -1,7 +1,7 @@
 suite = {
     "name": "vm",
     "version" : "21.2.0",
-    "mxversion" : "5.292.5",
+    "mxversion" : "5.295.0",
     "release" : False,
     "groupId" : "org.graalvm",
 
@@ -57,7 +57,7 @@ suite = {
             },
             {
                 "name": "truffleruby",
-                "version": "97019acca907225b7cd662f1b50a798afd22da8e",
+                "version": "f2e97df99606ad382b4ba8f1272984ecfacb95f9",
                 "dynamic": True,
                 "urls": [
                     {"url": "https://github.com/oracle/truffleruby.git", "kind": "git"},
@@ -66,7 +66,7 @@ suite = {
             },
             {
                 "name": "fastr",
-                "version": "1de287fb4e38ffb358559423666193946dade148",
+                "version": "f43a8fd365d039929886aacfe29c6d4150bd1ecf",
                 "dynamic": True,
                 "urls": [
                     {"url": "https://github.com/oracle/fastr.git", "kind": "git"},
