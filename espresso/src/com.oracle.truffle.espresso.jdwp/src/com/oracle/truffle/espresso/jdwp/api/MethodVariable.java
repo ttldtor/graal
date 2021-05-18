@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -20,23 +20,22 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.truffle.espresso.impl;
+package com.oracle.truffle.espresso.jdwp.api;
 
-public final class ChangePacket {
+public final class MethodVariable {
+    private final String identifier;
+    private final Object value;
 
-    public final HotSwapClassInfo info;
-    public final ParserKlass parserKlass;
-    public final ClassRedefinition.ClassChange classChange;
-    public final DetectedChange detectedChange;
-
-    public ChangePacket(HotSwapClassInfo redefineInfo, ParserKlass parserKlass, ClassRedefinition.ClassChange classChange, DetectedChange detectedChange) {
-        this.info = redefineInfo;
-        this.parserKlass = parserKlass;
-        this.classChange = classChange;
-        this.detectedChange = detectedChange;
+    public MethodVariable(String identifier, Object value) {
+        this.identifier = identifier;
+        this.value = value;
     }
 
-    public ChangePacket(HotSwapClassInfo redefineInfo, ClassRedefinition.ClassChange classChange) {
-        this(redefineInfo, null, classChange, null);
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public Object getValue() {
+        return value;
     }
 }
