@@ -1,10 +1,13 @@
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.
+ * published by the Free Software Foundation.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -20,16 +23,19 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.truffle.espresso.impl;
 
-import com.oracle.truffle.espresso.descriptors.Symbol;
-import com.oracle.truffle.espresso.descriptors.Symbol.Descriptor;
-import com.oracle.truffle.espresso.descriptors.Symbol.Name;
-import com.oracle.truffle.espresso.meta.ModifiersProvider;
+package hello;
 
-public abstract class Member<T extends Descriptor> implements ModifiersProvider {
+import com.oracle.svm.core.annotate.Substitute;
+import com.oracle.svm.core.annotate.TargetClass;
 
-    public abstract Symbol<Name> getName();
-
-    public abstract ObjectKlass getDeclaringKlass();
+@TargetClass(value = Hello.DefaultGreeter.class)
+final class Target_hello_Hello_DefaultGreeter {
+    @SuppressWarnings("static-method")
+    @Substitute
+    public void greet() {
+        // Checkstyle: stop
+        System.out.println("Hello, substituted world!");
+        // Checkstyle: resume
+    }
 }
