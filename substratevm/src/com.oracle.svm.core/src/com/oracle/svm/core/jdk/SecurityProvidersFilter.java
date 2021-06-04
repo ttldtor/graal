@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,48 +22,22 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.graalvm.compiler.nodes.memory;
+package com.oracle.svm.core.jdk;
 
-/**
- *
- * A special form of {@linkplain MemoryAccess} requiring barrier information for garbage collection.
- */
-public interface OnHeapMemoryAccess extends MemoryAccess {
+import org.graalvm.nativeimage.ImageSingletons;
 
-    /**
-     * The types of (write/read) barriers attached to stores.
-     */
-    enum BarrierType {
-        /**
-         * Primitive access which do not necessitate barriers.
-         */
-        NONE,
-        /**
-         * Array object access.
-         */
-        ARRAY,
-        /**
-         * Field object access.
-         */
-        FIELD,
-        /**
-         * Unknown (aka field or array) object access.
-         */
-        UNKNOWN,
-        /**
-         * Weak field access (e.g. Hotspot's Reference.referent field).
-         */
-        WEAK_FIELD,
-        /**
-         * Phantom field access (e.g. Hotspot's Reference.referent field of a PhantomReference
-         * instance).
-         */
-        PHANTOM_FIELD
+// Checkstyle: stop
+import sun.security.jca.ProviderList;
+// Checkstyle: resume
+
+public interface SecurityProvidersFilter {
+
+    static SecurityProvidersFilter instance() {
+        return ImageSingletons.lookup(SecurityProvidersFilter.class);
     }
 
-    /**
-     * Gets the write barrier type for that particular access.
-     */
-    BarrierType getBarrierType();
+    Object cleanVerificationCache(Object cache);
+
+    ProviderList cleanUnregisteredProviders(ProviderList providerList);
 
 }

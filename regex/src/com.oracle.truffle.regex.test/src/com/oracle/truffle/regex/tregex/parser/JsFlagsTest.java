@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,55 +38,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.regex.tregex.parser.flavors;
+package com.oracle.truffle.regex.tregex.parser;
 
+import com.oracle.truffle.regex.RegexFlags;
+import com.oracle.truffle.regex.RegexOptions;
 import com.oracle.truffle.regex.RegexSource;
+import org.junit.Test;
 
-/**
- * An implementation of a dialect (flavor) of regular expressions other than ECMAScript. The goal of
- * a flavor implementation is to translate regular expressions written in one flavor of regex (e.g.
- * Python) into equivalent regexes in ECMAScript.
- */
-public abstract class RegexFlavor {
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-    protected static final int BACKREFERENCES_TO_UNMATCHED_GROUPS_FAIL = 1 << 0;
-    protected static final int EMPTY_CHECKS_MONITOR_CAPTURE_GROUPS = 1 << 1;
-    protected static final int NESTED_CAPTURE_GROUPS_KEPT_ON_LOOP_REENTRY = 1 << 2;
-    protected static final int FAILING_EMPTY_CHECKS_DONT_BACKTRACK = 1 << 3;
+public class JsFlagsTest {
 
-    private final int traits;
-
-    protected RegexFlavor(int traits) {
-        this.traits = traits;
+    private static RegexFlags parse(String flags) {
+        return RegexFlags.parseFlags(new RegexSource("", flags, RegexOptions.DEFAULT, null));
     }
 
-    /**
-     * Given a {@link RegexSource}, returns a {@link RegexFlavorProcessor} that can be used to parse
-     * and translate the flavored regex into an ECMAScript regex.
-     */
-    public abstract RegexFlavorProcessor forRegex(RegexSource source);
+    @Test
+    public void testParseFlags() {
+        assertTrue(parse("i").isIgnoreCase());
+        assertTrue(parse("m").isMultiline());
+        assertTrue(parse("y").isSticky());
+        assertTrue(parse("g").isGlobal());
+        assertTrue(parse("u").isUnicode());
+        assertTrue(parse("s").isDotAll());
+        assertTrue(parse("d").hasIndices());
 
-    private boolean hasTrait(int traitMask) {
-        return (traits & traitMask) != 0;
-    }
+        RegexFlags allFlags = parse("imygusd");
+        assertTrue(allFlags.isIgnoreCase());
+        assertTrue(allFlags.isMultiline());
+        assertTrue(allFlags.isSticky());
+        assertTrue(allFlags.isGlobal());
+        assertTrue(allFlags.isUnicode());
+        assertTrue(allFlags.isDotAll());
+        assertTrue(allFlags.hasIndices());
 
-    public boolean backreferencesToUnmatchedGroupsFail() {
-        return hasTrait(BACKREFERENCES_TO_UNMATCHED_GROUPS_FAIL);
-    }
-
-    public boolean emptyChecksMonitorCaptureGroups() {
-        return hasTrait(EMPTY_CHECKS_MONITOR_CAPTURE_GROUPS);
-    }
-
-    public boolean nestedCaptureGroupsKeptOnLoopReentry() {
-        return hasTrait(NESTED_CAPTURE_GROUPS_KEPT_ON_LOOP_REENTRY);
-    }
-
-    public boolean failingEmptyChecksDontBacktrack() {
-        return hasTrait(FAILING_EMPTY_CHECKS_DONT_BACKTRACK);
-    }
-
-    public boolean canHaveEmptyLoopIterations() {
-        return emptyChecksMonitorCaptureGroups() || failingEmptyChecksDontBacktrack();
+        RegexFlags noFlags = parse("");
+        assertFalse(noFlags.isIgnoreCase());
+        assertFalse(noFlags.isMultiline());
+        assertFalse(noFlags.isSticky());
+        assertFalse(noFlags.isGlobal());
+        assertFalse(noFlags.isUnicode());
+        assertFalse(noFlags.isDotAll());
+        assertFalse(noFlags.hasIndices());
     }
 }
