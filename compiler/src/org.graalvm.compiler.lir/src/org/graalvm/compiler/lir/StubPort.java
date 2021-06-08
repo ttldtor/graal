@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,42 +22,40 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.configure.trace;
+package org.graalvm.compiler.lir;
 
-import java.util.Base64;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
-public abstract class AbstractProcessor {
-    AbstractProcessor() {
-    }
+/**
+ * Denotes port of a HotSpot stub. This information will be parsed by
+ * {@code org.graalvm.compiler.lir.processor.StubPortProcessor}.
+ */
+@Target(ElementType.TYPE)
+public @interface StubPort {
+    /**
+     * Relevant path of source code file containing the ported stub.
+     */
+    String path();
 
-    abstract void processEntry(Map<String, ?> entry);
+    /**
+     * Starting line of the ported stub.
+     */
+    int lineStart();
 
-    void setInLivePhase(@SuppressWarnings("unused") boolean live) {
-    }
+    /**
+     * Ending line of the ported stub.
+     */
+    int lineEnd();
 
-    static void logWarning(String warning) {
-        System.err.println("WARNING: " + warning);
-    }
+    /**
+     * Version of the original source code when the port was created or last updated.
+     */
+    String commit();
 
-    @SuppressWarnings("unchecked")
-    static <T> T singleElement(List<?> list) {
-        expectSize(list, 1);
-        return (T) list.get(0);
-    }
+    /**
+     * Digest of the source code that was ported.
+     */
+    String sha1();
 
-    static void expectSize(Collection<?> collection, int size) {
-        if (collection.size() != size) {
-            throw new IllegalArgumentException("List must have exactly " + size + " element(s)");
-        }
-    }
-
-    static byte[] asBinary(Object obj) {
-        if (obj instanceof byte[]) {
-            return (byte[]) obj;
-        }
-        return Base64.getDecoder().decode((String) obj);
-    }
 }
