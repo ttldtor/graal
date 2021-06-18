@@ -149,6 +149,7 @@ class NativeImageVM(GraalVm):
             self.base_image_build_args += ['--no-fallback', '-g', '--allow-incomplete-classpath']
             self.base_image_build_args += ['-H:+VerifyGraalGraphs', '-H:+VerifyPhases'] if vm.is_gate else []
             self.base_image_build_args += ['-J-ea', '-J-esa'] if vm.is_gate and not bm_suite.skip_build_assertions(self.benchmark_name) else []
+
             self.base_image_build_args += self.system_properties
             self.base_image_build_args += self.classpath_arguments
             self.base_image_build_args += self.executable
@@ -374,7 +375,7 @@ class NativeImageVM(GraalVm):
             return self
 
         def execute_command(self, vm=None):
-            write_output = self.current_stage == 'run' or self.is_gate
+            write_output = self.current_stage == 'run' or self.current_stage == 'image' or self.is_gate
             cmd = self.command
             self.exit_code = self.config.bmSuite.run_stage(vm, self.current_stage, cmd, self.stdout(write_output), self.stderr(write_output), self.cwd, False)
             if "image" not in self.current_stage and self.config.bmSuite.validateReturnCode(self.exit_code):
@@ -557,7 +558,7 @@ class NativeImageVM(GraalVm):
         pgo_args += ['-H:+AOTInliner'] if self.pgo_aot_inline else ['-H:-AOTInliner']
         final_image_command = config.base_image_build_args + executable_name_args + (pgo_args if self.pgo_instrumented_iterations > 0 or self.hotspot_pgo else [])
         with stages.set_command(final_image_command) as s:
-            s.execute_command(True)
+            s.execute_command()
 
     def run_stage_run(self, config, stages, out):
         image_path = os.path.join(config.output_dir, config.final_image_name)

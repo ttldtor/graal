@@ -916,7 +916,7 @@ public class StandardGraphBuilderPlugins {
                  */
                 if (targetMethod.canBeInlined() && targetMethod.getCodeSize() == 1) {
                     ValueNode object = receiver.get();
-                    if (RegisterFinalizerNode.mayHaveFinalizer(object, b.getAssumptions())) {
+                    if (RegisterFinalizerNode.mayHaveFinalizer(object, b.getMetaAccess(), b.getAssumptions())) {
                         RegisterFinalizerNode regFin = new RegisterFinalizerNode(object);
                         b.add(regFin);
                         b.setStateAfter(regFin);
@@ -1714,6 +1714,9 @@ public class StandardGraphBuilderPlugins {
 
             @Override
             public boolean apply(GraphBuilderContext b, ResolvedJavaMethod targetMethod, Receiver receiver, ValueNode result, ValueNode counters) {
+                if (b.needsExplicitException()) {
+                    return false;
+                }
                 if (result.isConstant()) {
                     b.push(JavaKind.Boolean, result);
                     return true;
