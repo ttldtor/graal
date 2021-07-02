@@ -39,7 +39,7 @@ suite = {
                 "name": "graal-nodejs",
                 "subdir": True,
                 "dynamic": True,
-                "version": "f2cada078663f617c35c8b37cc438ba885e7639b",
+                "version": "c03377385df14b522d1c966df7a089d1a7a5b794",
                 "urls" : [
                     {"url" : "https://github.com/graalvm/graaljs.git", "kind" : "git"},
                     {"url": "https://curio.ssw.jku.at/nexus/content/repositories/snapshots", "kind": "binary"},
@@ -49,7 +49,7 @@ suite = {
                 "name": "graal-js",
                 "subdir": True,
                 "dynamic": True,
-                "version": "f2cada078663f617c35c8b37cc438ba885e7639b",
+                "version": "c03377385df14b522d1c966df7a089d1a7a5b794",
                 "urls": [
                     {"url": "https://github.com/graalvm/graaljs.git", "kind" : "git"},
                     {"url": "https://curio.ssw.jku.at/nexus/content/repositories/snapshots", "kind": "binary"},
@@ -118,6 +118,15 @@ suite = {
                 "sdk:LAUNCHER_COMMON",
             ],
         },
+    },
+
+    "libraries" : {
+        # Note: small warmup benchmarks can be placed directly under `graal/vm/benchmarks/warmup`
+        # and uncomment the corresponding line for the `layout` of `POLYBENCH_BENCHMARKS` in current suite.
+        "WARMUP_BENCHMARKS" : {
+            "urls" : ["https://lafo.ssw.uni-linz.ac.at/pub/graal-external-deps/polybench/warmup-benchmarks-0.1.tar.gz"],
+            "sha1" : "4e4a81c096ecc4ba7c4de9ab8ca5180e93c85e60"
+        }
     },
 
     "distributions": {
@@ -195,6 +204,12 @@ suite = {
                 "./compiler/": [
                     "file:benchmarks/compiler/*",
                 ],
+                "./warmup/": [
+                    # "file:benchmarks/warmup/*.js",
+                    # "file:benchmarks/warmup/*.rb",
+                    # "file:benchmarks/warmup/*.py",
+                    "extracted-dependency:WARMUP_BENCHMARKS/*"
+                ]
             },
             "defaultBuild": False,
         },
