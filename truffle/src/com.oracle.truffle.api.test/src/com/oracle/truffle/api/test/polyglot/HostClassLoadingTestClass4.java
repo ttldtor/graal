@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,36 +38,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.api.dsl.test.processor;
+package com.oracle.truffle.api.test.polyglot;
 
-import com.oracle.truffle.api.dsl.test.ExpectError;
-import com.oracle.truffle.api.instrumentation.TruffleInstrument.Registration;
-import com.oracle.truffle.api.test.polyglot.ProxyInstrument;
+import java.util.ResourceBundle;
 
-public class InstrumentRegistrationTest {
+/**
+ * This class is used in {@link HostClassLoadingTest}. Renaming this class might be requiring
+ * changes.
+ */
+public final class HostClassLoadingTestClass4 {
 
-    @ExpectError("Registered instrument class must be at least package protected")
-    @Registration(id = "NonPublicInstrument")
-    private static final class PrivateInstrument extends ProxyInstrument {
-    }
-
-    @ExpectError("Registered instrument class must subclass TruffleInstrument")
-    @Registration(id = "WrongSuperClassInstrument")
-    public static final class WrongSuperClassInstrument {
-    }
-
-    @Registration(id = "MyInstrumentGood", name = "MyInstrumentGood")
-    public static final class MyInstrumentGood extends ProxyInstrument {
-    }
-
-    @Registration(id = "MyInstrumentGoodWithServices", name = "MyInstrumentGoodWithServices", services = Service1.class)
-    public static final class MyInstrumentGoodWithServices extends ProxyInstrument {
-
-    }
-
-    interface Service1 {
-    }
-
-    interface Service2 {
+    public static String testMethod(String bundleName, String key) {
+        return ResourceBundle.getBundle(bundleName).getString(key);
     }
 }
