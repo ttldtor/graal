@@ -33,7 +33,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -253,7 +252,6 @@ public final class ResourcesFeature implements Feature {
         Map<String, List<String>> matchedDirectoryResources = new HashMap<>();
         Set<String> allEntries = new HashSet<>();
         ArrayList<File> queue = new ArrayList<>();
-        String separator = FileSystems.getDefault().getSeparator();
 
         queue.add(root);
         while (!queue.isEmpty()) {
