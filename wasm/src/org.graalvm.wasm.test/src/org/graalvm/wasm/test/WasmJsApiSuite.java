@@ -441,7 +441,7 @@ public class WasmJsApiSuite {
     @Test
     public void testExportImportedFunctionInDifferentModules() throws IOException, InterruptedException {
         final byte[] m1 = compileWat("export", "(module (import \"a\" \"f\" (func $f (result i32))) (export \"f\" (func $f)))");
-        final byte[] m2 = compileWat("import", "(module (import \"b\" \"f\" (func $f (result i32))) (export \"f\" (func $f)))");
+        final byte[] m2 = compileWat("import", "(module (import \"b\" \"f\" (func $f (result i32))) (func (result i32) (call $f)) (export \"f\" (func $f)))");
         runTest(context -> {
             final Dictionary importObject = new Dictionary();
             importObject.addMember("a", Dictionary.create(new Object[]{
@@ -999,6 +999,81 @@ public class WasmJsApiSuite {
                 Assert.assertEquals("func_type", "0()i32", InteropLibrary.getUncached(funcType).execute(funcType, fn));
             } catch (InteropException e) {
                 throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Test
+    public void testInitialMemorySizeOutOfBounds() throws IOException {
+        runTest(context -> {
+            try {
+                WebAssembly.memAlloc(32768, 32770);
+                Assert.fail("Should have failed - initial memory size exceeds implementation limit");
+            } catch (WasmJsApiException e) {
+                Assert.assertEquals("Range error expected", WasmJsApiException.Kind.RangeError, e.kind());
+            }
+        });
+    }
+
+    @Test
+    public void testMinMemorySizeExceedsMaxSize() throws IOException {
+        runTest(context -> {
+            try {
+                WebAssembly.memAlloc(2, 1);
+                Assert.fail("Should have failed - min memory size bigger than max size");
+            } catch (WasmJsApiException e) {
+                Assert.assertEquals("Range error expected", WasmJsApiException.Kind.RangeError, e.kind());
+            }
+        });
+    }
+
+    @Test
+    public void testMemoryGrowLimit() throws IOException {
+        runTest(context -> {
+            try {
+                WasmMemory memory = WebAssembly.memAlloc(1, 1);
+                WebAssembly.memGrow(memory, 1);
+                Assert.fail("Should have failed - try to grow memory beyond max size");
+            } catch (WasmJsApiException e) {
+                Assert.assertEquals("Range error expected", WasmJsApiException.Kind.RangeError, e.kind());
+            }
+        });
+    }
+
+    @Test
+    public void testInitialTableSizeOutOfBounds() throws IOException {
+        runTest(context -> {
+            try {
+                // Negative numbers represent unsigned values
+                WebAssembly.tableAlloc(-10, -8);
+                Assert.fail("Should have failed - initial table size exceeds implementation limit");
+            } catch (WasmJsApiException e) {
+                Assert.assertEquals("Range error expected", WasmJsApiException.Kind.RangeError, e.kind());
+            }
+        });
+    }
+
+    @Test
+    public void testMinTableSizeExceedsMaxSize() throws IOException {
+        runTest(context -> {
+            try {
+                WebAssembly.tableAlloc(2, 1);
+                Assert.fail("Should have failed - min table size bigger than max size");
+            } catch (WasmJsApiException e) {
+                Assert.assertEquals("Range error expected", WasmJsApiException.Kind.RangeError, e.kind());
+            }
+        });
+    }
+
+    @Test
+    public void testTableGrowLimit() throws IOException {
+        runTest(context -> {
+            try {
+                WasmTable table = WebAssembly.tableAlloc(1, 1);
+                WebAssembly.tableGrow(table, 1);
+                Assert.fail("Should have failed - try to grow table beyond max size");
+            } catch (WasmJsApiException e) {
+                Assert.assertEquals("Range error expected", WasmJsApiException.Kind.RangeError, e.kind());
             }
         });
     }
