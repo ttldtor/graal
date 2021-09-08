@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2021, 2021, Red Hat Inc. All rights reserved.
+ * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,40 +22,33 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.graalvm.compiler.truffle.runtime;
 
-package hello;
+import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.RootNode;
 
-import com.oracle.svm.core.annotate.AlwaysInline;
-import com.oracle.svm.core.annotate.NeverInline;
-import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
-
-@TargetClass(value = Hello.DefaultGreeter.class)
-final class Target_hello_Hello_DefaultGreeter {
-    @SuppressWarnings("static-method")
-    @Substitute
-    public void greet() {
-        SubstituteHelperClass substituteHelperClass = new SubstituteHelperClass();
-        substituteHelperClass.inlineGreet();
+/**
+ * Base class for on-stack replaced (OSR) root nodes.
+ */
+public abstract class BaseOSRRootNode extends RootNode {
+    protected BaseOSRRootNode(TruffleLanguage<?> language, FrameDescriptor frameDescriptor) {
+        super(language, frameDescriptor);
     }
 
-}
-
-class SubstituteHelperClass {
-    @AlwaysInline("For testing purposes")
-    void inlineGreet() {
-        staticInlineGreet();
+    @Override
+    public final Object execute(VirtualFrame frame) {
+        try {
+            return executeOSR(frame);
+        } finally {
+            // this assertion is needed to keep the values from being cleared as non-live locals
+            assert frame != null && this != null;
+        }
     }
 
-    @AlwaysInline("For testing purposes")
-    private static void staticInlineGreet() {
-        nestedGreet();
-    }
-
-    @NeverInline("For testing purposes")
-    private static void nestedGreet() {
-        // Checkstyle: stop
-        System.out.println("Hello, substituted world!");
-        // Checkstyle: resume
-    }
+    /**
+     * Entrypoint for OSR root nodes.
+     */
+    protected abstract Object executeOSR(VirtualFrame frame);
 }

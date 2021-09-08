@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
- * Copyright (c) 2021, 2021, Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,40 +22,27 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package com.oracle.svm.core.os;
 
-package hello;
+import static com.oracle.svm.core.Isolates.IMAGE_HEAP_BEGIN;
+import static com.oracle.svm.core.Isolates.IMAGE_HEAP_END;
 
-import com.oracle.svm.core.annotate.AlwaysInline;
-import com.oracle.svm.core.annotate.NeverInline;
-import com.oracle.svm.core.annotate.Substitute;
-import com.oracle.svm.core.annotate.TargetClass;
+import org.graalvm.compiler.word.Word;
+import org.graalvm.word.UnsignedWord;
 
-@TargetClass(value = Hello.DefaultGreeter.class)
-final class Target_hello_Hello_DefaultGreeter {
-    @SuppressWarnings("static-method")
-    @Substitute
-    public void greet() {
-        SubstituteHelperClass substituteHelperClass = new SubstituteHelperClass();
-        substituteHelperClass.inlineGreet();
+import com.oracle.svm.core.annotate.Uninterruptible;
+import com.oracle.svm.core.heap.Heap;
+
+public abstract class AbstractImageHeapProvider implements ImageHeapProvider {
+    @Uninterruptible(reason = "Called from uninterruptible code.", mayBeInlined = true)
+    protected static UnsignedWord getImageHeapAddressSpaceSize() {
+        UnsignedWord imageHeapSizeInFile = getImageHeapSizeInFile();
+        return imageHeapSizeInFile.add(Heap.getHeap().getImageHeapOffsetInAddressSpace());
     }
 
-}
-
-class SubstituteHelperClass {
-    @AlwaysInline("For testing purposes")
-    void inlineGreet() {
-        staticInlineGreet();
-    }
-
-    @AlwaysInline("For testing purposes")
-    private static void staticInlineGreet() {
-        nestedGreet();
-    }
-
-    @NeverInline("For testing purposes")
-    private static void nestedGreet() {
-        // Checkstyle: stop
-        System.out.println("Hello, substituted world!");
-        // Checkstyle: resume
+    @Uninterruptible(reason = "Called from uninterruptible code.", mayBeInlined = true)
+    protected static UnsignedWord getImageHeapSizeInFile() {
+        Word imageHeapBegin = IMAGE_HEAP_BEGIN.get();
+        return IMAGE_HEAP_END.get().subtract(imageHeapBegin);
     }
 }
