@@ -79,6 +79,7 @@ JNIEXPORT int JNICALL JVM_GetInterfaceVersion() {
 }
 
 #ifdef __linux__
+#ifndef ANDROID
 /*
   Support for cpusets on Linux (JDK-6515172).
 
@@ -144,10 +145,11 @@ static int linux_active_processor_count() {
   assert(cpu_count > 0 && cpu_count <= configured_cpus, "sanity check");
   return cpu_count;
 }
+#endif /* ANDROID */
 #endif /* __linux__ */
 
 JNIEXPORT int JNICALL JVM_ActiveProcessorCount() {
-#ifdef __linux__
+#if defined  __linux__ && !defined ANDROID
     return linux_active_processor_count();
 #else
     return sysconf(_SC_NPROCESSORS_ONLN);
