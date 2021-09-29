@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,13 +20,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.graal.pointsto;
 
-import com.oracle.graal.pointsto.util.CompletionExecutor;
+package com.oracle.truffle.espresso.overlay;
 
-public class AnalysisObjectScanner extends ObjectScanner {
+import java.lang.ref.PhantomReference;
+import java.lang.ref.Reference;
 
-    public AnalysisObjectScanner(BigBang bb, CompletionExecutor executor, ReusableSet scannedObjects) {
-        super(bb, executor, scannedObjects, new AnalysisObjectScanningObserver(bb));
+import com.oracle.truffle.espresso.runtime.StaticObject;
+
+public class ReferenceSupport {
+    @SuppressWarnings("unused")
+    public static boolean phantomReferenceRefersTo(Reference<StaticObject> ref, StaticObject object) {
+        assert (ref instanceof PhantomReference);
+        return false;
+    }
+
+    public static boolean referenceRefersTo(Reference<StaticObject> ref, StaticObject object) {
+        assert !(ref instanceof PhantomReference);
+        StaticObject value = ref.get();
+        value = value == null ? StaticObject.NULL : value;
+        return value == object;
     }
 }
