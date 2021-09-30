@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,23 +38,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.api.instrumentation.test;
 
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.RootNode;
+package org.graalvm.wasm.test;
 
-public class CompileImmediatelyCheck {
+import java.util.Properties;
 
-    public static boolean isCompileImmediately() {
-        CallTarget target = new RootNode(null) {
-            @Override
-            public Object execute(VirtualFrame frame) {
-                return CompilerDirectives.inCompiledCode();
-            }
-        }.getCallTarget();
-        return (boolean) target.call();
+public class WasmTestProperties {
+    public static Properties create(String... properties) {
+        Properties p = new Properties();
+        for (String property : properties) {
+            p.setProperty(property, "true");
+        }
+        return p;
     }
-
 }

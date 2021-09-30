@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,23 +38,60 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.api.instrumentation.test;
 
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.RootNode;
+package org.graalvm.wasm;
 
-public class CompileImmediatelyCheck {
+import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import org.graalvm.options.OptionKey;
+import org.graalvm.options.OptionValues;
 
-    public static boolean isCompileImmediately() {
-        CallTarget target = new RootNode(null) {
-            @Override
-            public Object execute(VirtualFrame frame) {
-                return CompilerDirectives.inCompiledCode();
-            }
-        }.getCallTarget();
-        return (boolean) target.call();
+public class WasmContextOptions {
+    @CompilationFinal private boolean saturatingFloatToInt;
+    @CompilationFinal private OptionValues optionValues;
+
+    WasmContextOptions(OptionValues optionValues) {
+        this.optionValues = optionValues;
+        setOptionValues();
     }
 
+    public static WasmContextOptions fromOptionValues(OptionValues optionValues) {
+        return new WasmContextOptions(optionValues);
+    }
+
+    private void setOptionValues() {
+        this.saturatingFloatToInt = readBooleanOption(WasmOptions.SATURATING_FLOAT_TO_INT);
+    }
+
+    private boolean readBooleanOption(OptionKey<Boolean> key) {
+        return key.getValue(optionValues);
+    }
+
+    public boolean isSaturatingFloatToInt() {
+        return saturatingFloatToInt;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 53 * hash + (this.saturatingFloatToInt ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WasmContextOptions other = (WasmContextOptions) obj;
+        if (this.saturatingFloatToInt != other.saturatingFloatToInt) {
+            return false;
+        }
+        return true;
+    }
 }
