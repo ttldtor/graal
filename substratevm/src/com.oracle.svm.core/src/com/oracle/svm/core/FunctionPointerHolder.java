@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,21 +22,20 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.graalvm.compiler.nodes.memory;
+package com.oracle.svm.core;
 
-import org.graalvm.compiler.graph.MemoryKillMarker;
-import org.graalvm.compiler.nodes.FixedNode;
-import org.graalvm.compiler.nodes.ValueNodeInterface;
-import org.graalvm.word.LocationIdentity;
+import org.graalvm.nativeimage.c.function.CFunctionPointer;
 
 /**
- * This interface marks nodes that kill a set of memory locations represented by
- * {@linkplain LocationIdentity} (i.e. change a value at one or more locations that belong to these
- * location identities). This does not only include real memory kills like subclasses of
- * {@linkplain FixedNode} that, e.g., write a memory location, but also conceptual memory kills,
- * i.e., nodes in the memory graph that mark the last accesses to such a location, like a
- * {@linkplain MemoryPhiNode} node.
+ * Isolates require that all function pointers to image methods are in immutable classes. This class
+ * can be used as an immutable indirection for mutable classes that need to store a function
+ * pointer.
  */
-public interface MemoryKill extends ValueNodeInterface, MemoryKillMarker {
+public class FunctionPointerHolder {
 
+    public final CFunctionPointer functionPointer;
+
+    public FunctionPointerHolder(CFunctionPointer functionPointer) {
+        this.functionPointer = functionPointer;
+    }
 }
