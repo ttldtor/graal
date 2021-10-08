@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2018, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,33 +22,19 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package com.oracle.svm.core.jdk;
 
-package org.graalvm.compiler.hotspot.nodes.profiling;
+import java.util.function.BooleanSupplier;
 
-import jdk.vm.ci.meta.Value;
+import org.graalvm.compiler.serviceprovider.GraalServices;
+import org.graalvm.compiler.serviceprovider.JavaVersionUtil;
 
-import static org.graalvm.compiler.nodeinfo.NodeCycles.CYCLES_1;
-import static org.graalvm.compiler.nodeinfo.NodeSize.SIZE_1;
-
-import org.graalvm.compiler.core.common.type.StampFactory;
-import org.graalvm.compiler.graph.NodeClass;
-import org.graalvm.compiler.hotspot.HotSpotLIRGenerator;
-import org.graalvm.compiler.nodeinfo.NodeInfo;
-import org.graalvm.compiler.nodes.calc.FloatingNode;
-import org.graalvm.compiler.nodes.spi.LIRLowerable;
-import org.graalvm.compiler.nodes.spi.NodeLIRBuilderTool;
-
-@NodeInfo(cycles = CYCLES_1, size = SIZE_1)
-public class RandomSeedNode extends FloatingNode implements LIRLowerable {
-    public static final NodeClass<RandomSeedNode> TYPE = NodeClass.create(RandomSeedNode.class);
-
-    public RandomSeedNode() {
-        super(TYPE, StampFactory.intValue());
-    }
+public class JDK17_0_2OrLater implements BooleanSupplier {
 
     @Override
-    public void generate(NodeLIRBuilderTool gen) {
-        Value result = ((HotSpotLIRGenerator) gen.getLIRGeneratorTool()).emitRandomSeed();
-        gen.setResult(this, result);
+    public boolean getAsBoolean() {
+        return JavaVersionUtil.JAVA_SPEC > 17 ||
+                        (JavaVersionUtil.JAVA_SPEC == 17 && GraalServices.getJavaUpdateVersion() > 1);
     }
+
 }
