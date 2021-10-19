@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,24 +22,19 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.posix.headers;
+package org.graalvm.compiler.nodes;
 
-import org.graalvm.nativeimage.c.CContext;
-import org.graalvm.nativeimage.c.function.CFunction;
-
-// Checkstyle: stop
+import org.graalvm.compiler.nodes.graphbuilderconf.GeneratedPluginInjectionProvider;
+import org.graalvm.compiler.nodes.graphbuilderconf.GraphBuilderContext;
 
 /**
- * Definitions manually translated from the C header file sched.h.
+ * Interface for nodes responsible for {@linkplain GraphBuilderContext#shouldDeferPlugin deferring}
+ * {@linkplain org.graalvm.compiler.nodes.graphbuilderconf.InvocationPlugin invocation plugin}
+ * application.
  */
-@CContext(PosixDirectives.class)
-public class Sched {
-
-    @CFunction
-    public static native int sched_yield();
-
-    public static class NoTransitions {
-        @CFunction(transition = CFunction.Transition.NO_TRANSITION)
-        public static native int sched_yield();
-    }
+public interface PluginReplacementInterface extends FixedNodeInterface {
+    /**
+     * Replaces this node by applying the stored plugin.
+     */
+    boolean replace(GraphBuilderContext b, GeneratedPluginInjectionProvider injection);
 }

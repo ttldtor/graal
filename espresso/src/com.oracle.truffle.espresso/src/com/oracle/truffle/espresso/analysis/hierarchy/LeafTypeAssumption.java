@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2015, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Oracle designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Oracle in the LICENSE file that accompanied this code.
+ * published by the Free Software Foundation.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -22,24 +20,15 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.posix.headers;
 
-import org.graalvm.nativeimage.c.CContext;
-import org.graalvm.nativeimage.c.function.CFunction;
+package com.oracle.truffle.espresso.analysis.hierarchy;
 
-// Checkstyle: stop
+import com.oracle.truffle.api.Assumption;
 
 /**
- * Definitions manually translated from the C header file sched.h.
+ * A wrapper around {@link Assumption}. Ensures that class hierarchy assumptions are managed
+ * exclusively by {@link ClassHierarchyOracle}.
  */
-@CContext(PosixDirectives.class)
-public class Sched {
-
-    @CFunction
-    public static native int sched_yield();
-
-    public static class NoTransitions {
-        @CFunction(transition = CFunction.Transition.NO_TRANSITION)
-        public static native int sched_yield();
-    }
+public interface LeafTypeAssumption {
+    Assumption getAssumption();
 }
