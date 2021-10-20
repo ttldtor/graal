@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Alibaba Group Holding Limited. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,23 +23,13 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.option;
 
-import java.util.List;
+package com.oracle.svm.common.option;
 
-interface MultiOptionValue<T> {
+public class OptionParsingException extends Exception {
+    private static final long serialVersionUID = 1413275434484971842L;
 
-    Class<T> getValueType();
-
-    /**
-     * @return a list of option values, one for each place where the option is used
-     * @implSpec Note that it DOES NOT perform any splitting of string values based on a delimiter.
-     *           If you want to perform this split, use a utility
-     *           {@link OptionUtils#flatten(String, LocatableMultiOptionValue.Strings)}
-     */
-    List<T> values();
-
-    void valueUpdate(Object value);
-
-    MultiOptionValue<T> createCopy();
+    public OptionParsingException(Exception e) {
+        super(e);
+    }
 }

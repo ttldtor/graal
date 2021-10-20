@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Alibaba Group Holding Limited. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,16 +23,17 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.genscavenge;
 
-import com.oracle.svm.core.option.HostedOptionKey;
+package com.oracle.svm.common.option;
 
-/**
- * Only for compatibility with legacy code, replaced by {@link HeapParameters.Options}.
- */
-public final class HeapPolicyOptions {
-    public static final HostedOptionKey<Long> AlignedHeapChunkSize = HeapParameters.Options.AlignedHeapChunkSize;
+import org.graalvm.compiler.options.Option;
+import org.graalvm.compiler.options.OptionKey;
 
-    private HeapPolicyOptions() {
-    }
+public class CommonOptions {
+
+    @Option(help = "Show available options based on comma-separated option-types (allowed categories: User, Expert, Debug).")//
+    public static final OptionKey<String> PrintFlags = new OptionKey<>(null);
+
+    @Option(help = "Print extra help, if available, based on comma-separated option names. Pass * to show all options that contain extra help.")//
+    public static final OptionKey<String> PrintFlagsWithExtraHelp = new OptionKey<>(null);
 }

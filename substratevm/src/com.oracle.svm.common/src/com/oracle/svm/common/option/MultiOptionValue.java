@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2013, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Alibaba Group Holding Limited. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,42 +23,20 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.genscavenge;
+package com.oracle.svm.common.option;
 
-import org.graalvm.compiler.api.replacements.Fold;
-import org.graalvm.word.UnsignedWord;
+import java.util.List;
 
-/**
- * Only for compatibility with legacy code, replaced by {@link CollectionPolicy} and
- * {@link HeapParameters}.
- */
-public final class HeapPolicy {
-    public static UnsignedWord getMaximumHeapSize() {
-        return GCImpl.getPolicy().getMaximumHeapSize();
-    }
+public interface MultiOptionValue<T> {
 
-    public static UnsignedWord getMinimumHeapSize() {
-        return GCImpl.getPolicy().getMinimumHeapSize();
-    }
+    Class<T> getValueType();
 
-    public static void setMaximumHeapSize(UnsignedWord value) {
-        HeapParameters.setMaximumHeapSize(value);
-    }
+    /**
+     * @return a list of option values, one for each place where the option is used.
+     */
+    List<T> values();
 
-    public static void setMinimumHeapSize(UnsignedWord value) {
-        HeapParameters.setMinimumHeapSize(value);
-    }
+    void valueUpdate(Object value);
 
-    @Fold
-    public static UnsignedWord getAlignedHeapChunkSize() {
-        return HeapParameters.getAlignedHeapChunkSize();
-    }
-
-    @Fold
-    public static UnsignedWord getLargeArrayThreshold() {
-        return HeapParameters.getLargeArrayThreshold();
-    }
-
-    private HeapPolicy() {
-    }
+    MultiOptionValue<T> createCopy();
 }
