@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,48 +22,34 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.truffle.tools.chromeinspector.domains;
+package com.oracle.svm.reflect.target;
 
-import com.oracle.truffle.tools.chromeinspector.events.EventHandler;
+// Checkstyle: allow reflection
 
-public abstract class Domain {
+import org.graalvm.nativeimage.Platform;
+import org.graalvm.nativeimage.Platforms;
 
-    protected EventHandler eventHandler;
-    private boolean enabled;
+import com.oracle.svm.core.annotate.UnknownObjectField;
 
-    protected Domain() {
+public class MethodMetadataEncoding {
+    @UnknownObjectField(types = {byte[].class}) private byte[] methodsEncoding;
+    @UnknownObjectField(types = {byte[].class}) private byte[] indexEncoding;
+
+    public byte[] getMethodsEncoding() {
+        return methodsEncoding;
     }
 
-    public final void setEventHandler(EventHandler eventHandler) {
-        this.eventHandler = eventHandler;
+    @Platforms(Platform.HOSTED_ONLY.class)
+    public void setMethodsEncoding(byte[] methodsEncoding) {
+        this.methodsEncoding = methodsEncoding;
     }
 
-    protected abstract void doEnable();
-
-    protected abstract void doDisable();
-
-    protected void notifyDisabled() {
+    public byte[] getIndexEncoding() {
+        return indexEncoding;
     }
 
-    public final void enable() {
-        if (!enabled) {
-            enabled = true;
-            doEnable();
-        }
-    }
-
-    public void notifyClosing() {
-    }
-
-    public final void disable() {
-        if (enabled) {
-            enabled = false;
-            doDisable();
-        }
-        notifyDisabled();
-    }
-
-    public final boolean isEnabled() {
-        return enabled;
+    @Platforms(Platform.HOSTED_ONLY.class)
+    public void setIndexEncoding(byte[] indexEncoding) {
+        this.indexEncoding = indexEncoding;
     }
 }
