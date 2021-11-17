@@ -57,7 +57,7 @@ suite = {
             },
             {
                 "name": "truffleruby",
-                "version": "f709b810385454a589febfb6ecd25f89932a3543",
+                "version": "9bcfd4f0e628354e3a489a290cd223569c05db1c",
                 "dynamic": True,
                 "urls": [
                     {"url": "https://github.com/oracle/truffleruby.git", "kind": "git"},
@@ -119,6 +119,19 @@ suite = {
             ],
         },
         "org.graalvm.polybench.micro" : {
+            "subDir" : "src",
+            "sourceDirs" : ["src"],
+            "javaCompliance" : "1.8+",
+            "license" : "GPLv2-CPE",
+            "checkstyle": "org.graalvm.component.installer",
+            "dependencies": [
+                "truffle:TRUFFLE_API",
+            ],
+            "annotationProcessors": [
+                "truffle:TRUFFLE_DSL_PROCESSOR",
+            ],
+        },
+        "org.graalvm.polybench.instruments" : {
             "subDir" : "src",
             "sourceDirs" : ["src"],
             "javaCompliance" : "1.8+",
@@ -211,6 +224,23 @@ suite = {
                 "sdk:LAUNCHER_COMMON",
             ],
             "maven" : False,
+        },
+        "POLYBENCH_INSTRUMENTS": {
+            "subDir": "src",
+            "dependencies": [
+                "org.graalvm.polybench.instruments",
+            ],
+            "distDependencies": [
+                "truffle:TRUFFLE_API",
+            ],
+            "maven" : False,
+        },
+        "POLYBENCH_INSTRUMENTS_SUPPORT" : {
+            "native" : True,
+            "description" : "Truffle Profiler support distribution for the GraalVM",
+            "layout" : {
+                "native-image.properties" : "file:mx.vm/polybench-instruments.properties",
+            },
         },
         "PMH": {
             "subDir": "src",
