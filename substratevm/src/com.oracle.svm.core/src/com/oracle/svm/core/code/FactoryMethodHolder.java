@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2017, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,32 +22,16 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.graalvm.tools.lsp.server.utils;
+package com.oracle.svm.core.code;
 
-import java.net.URI;
+import com.oracle.svm.core.jdk.InternalVMMethod;
 
-import com.oracle.truffle.api.frame.MaterializedFrame;
-
-public final class CoverageData {
-    private final MaterializedFrame frame;
-    private final CoverageEventNode coverageEventNode;
-    private final URI coverageUri;
-
-    public CoverageData(URI coverageUri, MaterializedFrame frame, CoverageEventNode coverageEventNode) {
-        this.coverageUri = coverageUri;
-        this.frame = frame;
-        this.coverageEventNode = coverageEventNode;
-    }
-
-    public MaterializedFrame getFrame() {
-        return frame;
-    }
-
-    public URI getCoverageUri() {
-        return coverageUri;
-    }
-
-    public CoverageEventNode getCoverageEventNode() {
-        return coverageEventNode;
+/**
+ * Holder class for generated factory methods (methods that combine object allocation and invocation
+ * of a constructor).
+ */
+@InternalVMMethod
+public final class FactoryMethodHolder {
+    private FactoryMethodHolder() {
     }
 }
