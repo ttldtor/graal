@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,18 +22,32 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.windows.headers;
+package com.oracle.svm.core.jdk;
 
-import org.graalvm.nativeimage.Platform;
-import org.graalvm.nativeimage.Platforms;
-import org.graalvm.nativeimage.c.function.CFunction;
-import org.graalvm.nativeimage.c.type.CIntPointer;
+// Checkstyle: allow reflection
 
-// Checkstyle: stop
+import org.graalvm.compiler.api.replacements.Fold;
 
-@Platforms(Platform.WINDOWS.class)
-public class WindowsErrno {
+import com.oracle.svm.core.annotate.Alias;
+import com.oracle.svm.core.annotate.Substitute;
+import com.oracle.svm.core.annotate.TargetClass;
 
-    @CFunction(transition = CFunction.Transition.NO_TRANSITION)
-    public static native CIntPointer _errno();
+import sun.security.util.Debug;
+
+@TargetClass(java.security.AccessControlContext.class)
+final class Target_java_security_AccessControlContext {
+
+    @Alias //
+    boolean isPrivileged;
+
+    /**
+     * Avoid making the code for debug printing reachable. We do not need it, and it only increases
+     * code size. If we ever want to enable debug printing, several classes related to it need to be
+     * initialized at run time because configuration parsing is in a class initializer.
+     */
+    @Substitute
+    @Fold
+    static Debug getDebug() {
+        return null;
+    }
 }
