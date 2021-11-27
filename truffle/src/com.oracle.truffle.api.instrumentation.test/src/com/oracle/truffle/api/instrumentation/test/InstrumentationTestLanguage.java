@@ -82,7 +82,6 @@ import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameInstance;
 import com.oracle.truffle.api.frame.FrameInstanceVisitor;
-import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.instrumentation.AllocationReporter;
@@ -1984,7 +1983,7 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
             try {
                 Thread.sleep(timeToSleep);
             } catch (InterruptedException e) {
-                throw new AssertionError(e);
+                throw new Interrupted();
             }
         }
 
@@ -1992,6 +1991,17 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
         protected BaseNode copyUninitialized(Set<Class<? extends Tag>> materializedTags) {
             return new SleepNode(timeToSleep, cloneUninitialized(children, materializedTags));
         }
+    }
+
+    @SuppressWarnings("serial")
+    @ExportLibrary(InteropLibrary.class)
+    static class Interrupted extends AbstractTruffleException {
+
+        @ExportMessage
+        public ExceptionType getExceptionType() {
+            return ExceptionType.INTERRUPT;
+        }
+
     }
 
     private static class ConstantNode extends InstrumentedNode {
@@ -2488,7 +2498,7 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
         private final String name;
         private final Object value;
 
-        @CompilationFinal private FrameSlot slot;
+        @CompilationFinal private Integer slot;
         final AllocationReporter allocationReporter;
 
         private VariableNode(String name, String identifier, BaseNode[] children, AllocationReporter allocationReporter) {
@@ -2513,9 +2523,9 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
             }
             if (slot == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                slot = frame.getFrameDescriptor().findOrAddFrameSlot(name);
+                slot = frame.getFrameDescriptor().findOrAddAuxiliarySlot(name);
             }
-            frame.setObject(slot, value);
+            frame.setAuxiliarySlot(slot, value);
             if (allocationReporter.isActive()) {
                 allocationReporter.onReturnValue(value, 0, getValueSize());
             }
@@ -2551,7 +2561,7 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
     private static final class ReadVariableNode extends InstrumentedNode {
 
         private final String name;
-        @CompilationFinal private FrameSlot slot;
+        @CompilationFinal private Integer slot;
 
         private ReadVariableNode(String name, BaseNode[] children) {
             super(children);
@@ -2562,13 +2572,13 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
         public Object execute(VirtualFrame frame) {
             if (slot == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                slot = frame.getFrameDescriptor().findFrameSlot(name);
+                slot = frame.getFrameDescriptor().findOrAddAuxiliarySlot(name);
                 if (slot == null) {
                     throw new IllegalStateException("Unknown variable " + name);
                 }
             }
             super.execute(frame);
-            return frame.getValue(slot);
+            return frame.getAuxiliarySlot(slot);
         }
     }
 
@@ -2576,7 +2586,7 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
 
         private final String name;
 
-        @CompilationFinal private FrameSlot slot;
+        @CompilationFinal private Integer slot;
         @CompilationFinal private int index;
 
         ArgumentNode(String name, BaseNode[] children) {
@@ -2592,7 +2602,7 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
         public Object execute(VirtualFrame frame) {
             if (slot == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                slot = frame.getFrameDescriptor().findOrAddFrameSlot(name);
+                slot = frame.getFrameDescriptor().findOrAddAuxiliarySlot(name);
             }
             Object[] args = frame.getArguments();
             Object value;
@@ -2605,7 +2615,7 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
                     value = args[index];
                 }
             }
-            frame.setObject(slot, value);
+            frame.setAuxiliarySlot(slot, value);
             super.execute(frame);
             return value;
         }
@@ -2620,8 +2630,8 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
 
         @Child private LoopNode loop;
 
-        @CompilationFinal FrameSlot loopIndexSlot;
-        @CompilationFinal FrameSlot loopResultSlot;
+        @CompilationFinal Integer loopIndexSlot;
+        @CompilationFinal Integer loopResultSlot;
 
         WhileLoopNode(Object loopCount, BaseNode[] children) {
             this.loop = Truffle.getRuntime().createLoopNode(new LoopConditionNode(loopCount, children));
@@ -2631,18 +2641,18 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
             this.loop = Truffle.getRuntime().createLoopNode(new LoopConditionNode(loopCount, infinite, children));
         }
 
-        FrameSlot getLoopIndex() {
+        Integer getLoopIndex() {
             if (loopIndexSlot == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                loopIndexSlot = getRootNode().getFrameDescriptor().findOrAddFrameSlot("loopIndex" + getLoopDepth());
+                loopIndexSlot = getRootNode().getFrameDescriptor().findOrAddAuxiliarySlot("loopIndex" + getLoopDepth());
             }
             return loopIndexSlot;
         }
 
-        FrameSlot getResult() {
+        Integer getResult() {
             if (loopResultSlot == null) {
                 CompilerDirectives.transferToInterpreterAndInvalidate();
-                loopResultSlot = getRootNode().getFrameDescriptor().findOrAddFrameSlot("loopResult" + getLoopDepth());
+                loopResultSlot = getRootNode().getFrameDescriptor().findOrAddAuxiliarySlot("loopResult" + getLoopDepth());
             }
             return loopResultSlot;
         }
@@ -2661,11 +2671,11 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
 
         @Override
         public Object execute(VirtualFrame frame) {
-            frame.setObject(getResult(), Null.INSTANCE);
-            frame.setInt(getLoopIndex(), 0);
+            frame.setAuxiliarySlot(getResult(), Null.INSTANCE);
+            frame.setAuxiliarySlot(getLoopIndex(), 0);
             loop.execute(frame);
             try {
-                return frame.getObject(loopResultSlot);
+                return frame.getAuxiliarySlot(loopResultSlot);
             } catch (FrameSlotTypeException e) {
                 CompilerDirectives.transferToInterpreter();
                 throw new AssertionError(e);
@@ -2718,15 +2728,15 @@ public class InstrumentationTestLanguage extends TruffleLanguage<InstrumentConte
             public boolean executeRepeating(VirtualFrame frame) {
                 int i;
                 try {
-                    i = frame.getInt(loopIndexSlot);
-                } catch (FrameSlotTypeException e) {
+                    i = (int) frame.getAuxiliarySlot(loopIndexSlot);
+                } catch (ClassCastException e) {
                     CompilerDirectives.transferToInterpreter();
                     throw new AssertionError(e);
                 }
                 if (infinite || i < loopCount) {
                     Object resultValue = super.execute(frame);
-                    frame.setInt(loopIndexSlot, i + 1);
-                    frame.setObject(loopResultSlot, resultValue);
+                    frame.setAuxiliarySlot(loopIndexSlot, i + 1);
+                    frame.setAuxiliarySlot(loopResultSlot, resultValue);
                     return true;
                 } else {
                     return false;
