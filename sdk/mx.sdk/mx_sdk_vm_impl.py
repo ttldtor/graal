@@ -1335,7 +1335,8 @@ class NativePropertiesBuildTask(mx.ProjectBuildTask):
                 for language, path in sorted(image_config.relative_home_paths.items()):
                     build_args += ['-Dorg.graalvm.launcher.relative.' + language + '.home=' + path]
 
-            build_args += [graalvm_dist.string_substitutions.substitute(arg) for arg in image_config.build_args]
+            image_config_build_args = image_config.build_args + (image_config.build_args_enterprise if has_component('svmee', stage1=True) else [])
+            build_args += [graalvm_dist.string_substitutions.substitute(arg) for arg in image_config_build_args]
 
             name = basename(image_config.destination)
             if suffix:
@@ -1360,7 +1361,7 @@ class NativePropertiesBuildTask(mx.ProjectBuildTask):
             build_args = [arg for arg in build_args if not (arg.startswith('--language:') or arg.startswith('--tool:') or arg.startswith('--macro:'))]
 
             if any((' ' in arg for arg in build_args)):
-                mx.abort("Unsupported space in launcher build argument: {} in config for {}".format(image_config.build_args, image_config.destination))
+                mx.abort("Unsupported space in launcher build argument: {} in config for {}".format(image_config_build_args, image_config.destination))
 
             self._contents = u""
 
@@ -2707,6 +2708,13 @@ class NativeLibraryLauncherProject(mx_native.DefaultNativeProject):
                 '-DLIBLANG_RELPATH=' + (_liblang_relpath.replace('\\', '\\\\') if mx.is_windows() else _liblang_relpath)
             ]
         return super(NativeLibraryLauncherProject, self).cflags + _dynamic_cflags
+
+    @property
+    def ldflags(self):
+        _dynamic_ldflags = []
+        if not mx.is_windows():
+            _dynamic_ldflags += ['-pthread']
+        return super(NativeLibraryLauncherProject, self).ldflags + _dynamic_ldflags
 
     @property
     def ldlibs(self):
