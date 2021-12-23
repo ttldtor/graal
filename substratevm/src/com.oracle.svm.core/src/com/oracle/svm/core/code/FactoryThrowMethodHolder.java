@@ -22,25 +22,18 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.hosted;
+package com.oracle.svm.core.code;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
+import com.oracle.svm.core.jdk.InternalVMMethod;
 
-/* TODO: Added as a temporary workaround to provide compatibility with JDK8 (GR-35238). */
-public class StringAccess {
-
-    private static final VarHandle STRING_VALUE;
-    static {
-        try {
-            MethodHandles.Lookup privateLookup = MethodHandles.privateLookupIn(String.class, MethodHandles.lookup());
-            STRING_VALUE = privateLookup.unreflectVarHandle(String.class.getDeclaredField("value"));
-        } catch (ReflectiveOperationException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    public static int getInternalByteArrayLength(String string) {
-        return ((byte[]) STRING_VALUE.get(string)).length;
+/**
+ * Holder class for generated factory methods (methods that combine object allocation and invocation
+ * of a constructor) that then immediately throw the allocated objects (which must be an exception
+ * type).
+ */
+@InternalVMMethod
+@FactoryMethodMarker
+public final class FactoryThrowMethodHolder {
+    private FactoryThrowMethodHolder() {
     }
 }
