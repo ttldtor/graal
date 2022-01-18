@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,44 +38,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.polyglot;
+package com.oracle.truffle.regex.tregex.parser.flavors;
 
-import org.graalvm.options.OptionDescriptors;
-import org.graalvm.polyglot.impl.AbstractPolyglotImpl.AbstractInstrumentDispatch;
-
-final class PolyglotInstrumentDispatch extends AbstractInstrumentDispatch {
-
-    protected PolyglotInstrumentDispatch(PolyglotImpl impl) {
-        super(impl);
-    }
-
-    @Override
-    public String getId(Object receiver) {
-        return ((PolyglotInstrument) receiver).getId();
-    }
-
-    @Override
-    public String getName(Object receiver) {
-        return ((PolyglotInstrument) receiver).getName();
-    }
-
-    @Override
-    public OptionDescriptors getOptions(Object receiver) {
-        return ((PolyglotInstrument) receiver).getOptions();
-    }
-
-    @Override
-    public String getVersion(Object receiver) {
-        return ((PolyglotInstrument) receiver).getVersion();
-    }
-
-    @Override
-    public <T> T lookup(Object receiver, Class<T> type) {
-        return ((PolyglotInstrument) receiver).lookup(type);
-    }
-
-    @Override
-    public String getWebsite(Object receiver) {
-        return ((PolyglotInstrument) receiver).getWebsite();
-    }
+public enum PythonMethod {
+    /**
+     * The {@code search} method scans for the first location matching the regular expression.
+     */
+    search,
+    /**
+     * The {@code match} method returns a match if the beginning of the string matches the regular
+     * expression.
+     */
+    match,
+    /**
+     * The {@code fullmatch} method returns a match if the whole string matches the regular
+     * expression.
+     */
+    fullmatch;
 }
