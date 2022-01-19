@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,21 +22,22 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.graal.pointsto.flow;
+package com.oracle.svm.hosted.jdk;
 
-import com.oracle.graal.pointsto.meta.AnalysisField;
-import com.oracle.graal.pointsto.meta.AnalysisType;
+import org.graalvm.nativeimage.hosted.Feature;
 
-/** A sink type flow for all the context sensitive flows of an analysis field. */
-public class FieldSinkTypeFlow extends FieldTypeFlow {
+import com.oracle.svm.core.annotate.AutomaticFeature;
+import com.oracle.svm.hosted.FeatureImpl;
 
-    public FieldSinkTypeFlow(AnalysisField field, AnalysisType type) {
-        super(field, type);
-    }
+@AutomaticFeature
+public class JRTFeature implements Feature {
 
     @Override
-    public String toString() {
-        return "FieldSinkFlow<" + source.format("%h.%n") + "\n" + getState() + ">";
+    public void beforeAnalysis(BeforeAnalysisAccess access) {
+        access.registerReachabilityHandler(duringAnalysisAccess -> {
+            FeatureImpl.BeforeAnalysisAccessImpl beforeAnalysisAccess = (FeatureImpl.BeforeAnalysisAccessImpl) access;
+            beforeAnalysisAccess.getNativeLibraries().addStaticJniLibrary("jimage");
+            beforeAnalysisAccess.getNativeLibraries().addDynamicNonJniLibrary("stdc++");
+        }, access.findClassByName("jdk.internal.jimage.NativeImageBuffer"));
     }
-
 }

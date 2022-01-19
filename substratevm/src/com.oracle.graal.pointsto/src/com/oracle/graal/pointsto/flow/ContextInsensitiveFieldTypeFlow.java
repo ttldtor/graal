@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,47 +22,41 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.graal.pointsto.typestore;
+package com.oracle.graal.pointsto.flow;
 
-import com.oracle.graal.pointsto.flow.FieldTypeFlow;
+import com.oracle.graal.pointsto.PointsToAnalysis;
 import com.oracle.graal.pointsto.flow.context.object.AnalysisObject;
 import com.oracle.graal.pointsto.meta.AnalysisField;
+import com.oracle.graal.pointsto.meta.AnalysisType;
+import com.oracle.graal.pointsto.typestate.TypeState;
 
 /**
- * Store for instance field access type flows. The read and write flows are unified.
+ * A field type flow that only tracks field types, i.e., it doesn't track any context-sensitive
+ * information.
  */
-public class UnifiedFieldTypeStore extends FieldTypeStore {
+public class ContextInsensitiveFieldTypeFlow extends FieldTypeFlow {
 
-    private final FieldTypeFlow readWriteFlow;
-
-    public UnifiedFieldTypeStore(AnalysisField field, AnalysisObject object) {
-        this(field, object, new FieldTypeFlow(field, field.getType(), object));
+    public ContextInsensitiveFieldTypeFlow(AnalysisField field, AnalysisType type) {
+        super(field, type);
     }
 
-    public UnifiedFieldTypeStore(AnalysisField field, AnalysisObject object, FieldTypeFlow fieldFlow) {
-        super(field, object);
-        this.readWriteFlow = fieldFlow;
+    public ContextInsensitiveFieldTypeFlow(AnalysisField field, AnalysisType type, AnalysisObject object) {
+        super(field, type, object);
     }
 
     @Override
-    public FieldTypeFlow readFlow() {
-        return readWriteFlow;
-    }
-
-    @Override
-    public FieldTypeFlow writeFlow() {
-        return readWriteFlow;
-    }
-
-    public FieldTypeFlow readWriteFlow() {
-        return readWriteFlow;
+    public boolean addState(PointsToAnalysis bb, TypeState add) {
+        /*
+         * Strip the context sensitivity from the input state to avoid marking any context-sensitive
+         * objects as merged. The field sink type flow collects field concrete types, but it doesn't
+         * need to track individual context-sensitive objects.
+         */
+        return super.addState(bb, TypeState.forContextInsensitiveTypeState(bb, add));
     }
 
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder();
-        str.append("UnifiedFieldStore<").append(field.format("%h.%n")).append("\n").append(object).append(">");
-        return str.toString();
+        return "ContextInsensitiveFieldTypeFlow<" + source.format("%h.%n") + "\n" + getState() + ">";
     }
 
 }
