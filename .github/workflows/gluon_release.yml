@@ -92,7 +92,7 @@ jobs:
       if: matrix.jdk == '17'
       uses: actions/download-artifact@v2
       with:
-        name: labsjdk-17-static-libs-linux.zip.zip
+        name: labsjdk-17-static-libs-linux.zip
     - name: Build GraalVM
       id: linux-build-graalvm
       env:
@@ -118,7 +118,6 @@ jobs:
         then
           echo "Replace static libs under linux-amd64/glibc"
           rm graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/*.a
-          unzip ${{ github.workspace }}/labsjdk-17-static-libs-linux.zip.zip
           unzip -j ${{ github.workspace }}/labsjdk-17-static-libs-linux.zip -d graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
         fi
         zip -r ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
