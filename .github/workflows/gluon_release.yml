@@ -40,6 +40,17 @@ jobs:
         cd ${{ github.workspace }}/labsjdk
         sh configure --with-conf-name=labsjdk --with-version-opt=${{ env.JVMCI_VERSION }} --with-native-debug-symbols=none --with-version-pre= '--with-vendor-name=GraalVM Community' --with-vendor-url=https://www.graalvm.org/ --with-vendor-bug-url=https://github.com/oracle/graal/issues --with-vendor-vm-bug-url=https://github.com/oracle/graal/issues
         make CONF_NAME=labsjdk static-libs-image
+        
+    - name: Create zip
+      run: |
+        mkdir labsjdk-ce-17-${{ env.JVMCI_VERSION }}-static-libs
+        cp build/labsjdk/images/static-libs/lib/* labsjdk-ce-17-${{ env.JVMCI_VERSION }}-static-libs/
+        zip -r labsjdk-17-static-libs-linux.zip labsjdk-ce-17-${{ env.JVMCI_VERSION }}-static-libs
+        
+    - name: Upload zip
+      uses: actions/upload-artifact@v2
+      with:
+        path: labsjdk-17-static-libs-linux.zip
 
   build-graalvm-linux:
     needs:
@@ -91,6 +102,12 @@ jobs:
         ${MX_PATH}/mx --dy /substratevm build
         GRAALVM_HOME=`${MX_PATH}/mx --dy /substratevm graalvm-home`
         echo "::set-output name=graalvm-home-dir::$GRAALVM_HOME"
+        
+    - name: Download labsjdk static zip
+      if: ${{ ${{ matrix.jdk }} == "17" }}
+      uses: actions/download-artifact@v2
+      with:
+        name: labsjdk-17-static-libs-linux.zip
       
     - name: Create distribution
       working-directory: ./vm
@@ -99,9 +116,9 @@ jobs:
         mv `ls -1 | head -n1` graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
         if [[ ${{ matrix.jdk }} == "17" ]]
         then
-          echo "Replace static libs under linux-amd64/glibc"
+          echo "Replace static libs under linux-amd64/glibc with ${{steps.download.outputs.download-path}}"
           rm graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/*.a
-          cp -r ${{ github.workspace }}/labsjdk/build/labsjdk/images/static-libs/lib/ graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
+          unzip ${{steps.download.outputs.download-path}}/labsjdk-17-static-libs-linux.zip -d graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
         fi
         zip -r ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
 
