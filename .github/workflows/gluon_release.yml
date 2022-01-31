@@ -101,7 +101,7 @@ jobs:
         then
           echo "Replace static libs under linux-amd64/glibc"
           rm graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/*.a
-          cp ${{ github.workspace }}/labsjdk/build/labsjdk/images/static-libs/lib/* graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
+          cp -r ${{ github.workspace }}/labsjdk/build/labsjdk/images/static-libs/lib/ graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
         fi
         zip -r ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
 
