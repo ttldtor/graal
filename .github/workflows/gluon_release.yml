@@ -104,7 +104,7 @@ jobs:
         echo "::set-output name=graalvm-home-dir::$GRAALVM_HOME"
         
     - name: Download labsjdk static zip
-      if: ${{ ${{ matrix.jdk }} == "17" }}
+      if: ${{ $matrix.jdk == "17" }}
       uses: actions/download-artifact@v2
       with:
         name: labsjdk-17-static-libs-linux.zip
