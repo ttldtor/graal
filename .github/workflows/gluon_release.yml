@@ -92,7 +92,7 @@ jobs:
       if: matrix.jdk == '17'
       uses: actions/download-artifact@v2
       with:
-        name: labsjdk-17-static-libs-linux.zip
+        name: labsjdk-17-static-libs-linux.zip.zip
     - name: Build GraalVM
       id: linux-build-graalvm
       env:
