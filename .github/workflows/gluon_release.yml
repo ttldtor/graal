@@ -29,7 +29,6 @@ jobs:
         repository: graalvm/labs-openjdk-17.git
         fetch-depth: 1
         ref: ${{ env.JVMCI_VERSION }}
-        path: ${{ github.workspace }}/labsjdk
         
     - name: Update libraries Libraries
       run: |
