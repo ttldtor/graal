@@ -17,9 +17,31 @@ jobs:
     - id: fetchVersion
       run: echo ::set-output name=version::$(echo $GITHUB_REF | sed -E "s/.*(gluon-.*-(dev|Final)).*/\1/g")
 
+  build-labsjdk-static:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        repository: graalvm/labs-openjdk-17.git
+        fetch-depth: 1
+        ref: jvmci-22.0-b05
+        path: ${{ github.workspace }}/labsjdk
+        
+    - name: Update libraries Libraries
+      run: |
+          sudo apt update
+          sudo apt install libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev libcups2-dev libasound2-dev
+    
+    - name: Build static libs
+      run: |
+        cd ${{ github.workspace }}/labsjdk
+        sh configure --with-conf-name=labsjdk --with-version-opt=${{ env.JVMCI_VERSION }} --with-native-debug-symbols=none --with-version-pre= '--with-vendor-name=GraalVM Community' --with-vendor-url=https://www.graalvm.org/ --with-vendor-bug-url=https://github.com/oracle/graal/issues --with-vendor-vm-bug-url=https://github.com/oracle/graal/issues
+        make CONF_NAME=labsjdk static-libs-image
+
   build-graalvm-linux:
     needs:
       - determine-version
+      - build-labsjdk-static
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -66,12 +88,18 @@ jobs:
         ${MX_PATH}/mx --dy /substratevm build
         GRAALVM_HOME=`${MX_PATH}/mx --dy /substratevm graalvm-home`
         echo "::set-output name=graalvm-home-dir::$GRAALVM_HOME"
+      
     - name: Create distribution
       working-directory: ./vm
       run: |
         cd ${{ steps.linux-build-graalvm.outputs.graalvm-home-dir }}/..
         mv `ls -1 | head -n1` graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
+        if [[ $JDK == '17' ]]
+        then
+          \cp -r ${{ github.workspace }}/labsjdk/build/labsjdk/images/static-libs/lib/* ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
+        fi
         zip -r ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
+
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
@@ -80,6 +108,7 @@ jobs:
           vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip
 
   build-graalvm-darwin:
+    if: ${{ false }}  # disable for now
     needs:
       - determine-version
     runs-on: macos-10.15
@@ -142,6 +171,7 @@ jobs:
           vm/graalvm-svm-java${{ matrix.jdk }}-darwin-${{ needs.determine-version.outputs.version }}.zip
 
   build-graalvm-windows:
+    if: ${{ false }}  # disable for now
     needs:
       - determine-version
     runs-on: windows-2019
