@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,16 +22,28 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core;
+package org.graalvm.compiler.nodes.test;
 
-import java.util.EnumSet;
+import org.graalvm.compiler.api.directives.GraalDirectives;
+import org.graalvm.compiler.core.test.GraalCompilerTest;
+import org.junit.Test;
 
-import jdk.vm.ci.code.Architecture;
+public class CompareZeroExtendWithConstantTest extends GraalCompilerTest {
 
-public interface CPUFeatureAccess {
-    void verifyHostSupportsArchitecture(Architecture imageArchitecture);
+    public static byte[] a = {};
 
-    void enableFeatures(Architecture architecture);
+    public static void snippet() {
+        for (byte b : a) {
+            char c = (char) b;
+            GraalDirectives.blackhole(c);
+            if ((short) c != -19704) {
+                GraalDirectives.controlFlowAnchor();
+            }
+        }
+    }
 
-    EnumSet<?> determineHostCPUFeatures();
+    @Test
+    public void testSnippet() {
+        test("snippet");
+    }
 }
