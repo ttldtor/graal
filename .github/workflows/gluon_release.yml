@@ -117,22 +117,22 @@ jobs:
       working-directory: ./vm
       run: |
         cd ${{ steps.linux-build-graalvm.outputs.graalvm-home-dir }}/..
-        mv `ls -1 | head -n1` ${GRAALVM_SVM}
+        mv `ls -1 | head -n1` ${{ env.GRAALVM_SVM }}
         if [[ ${{ matrix.jdk }} == "17" ]]
         then
           echo "Replace static libs under linux-amd64/glibc"
-          rm ${GRAALVM_SVM}/lib/static/linux-amd64/glibc/*.a
-          unzip -j ${{ github.workspace }}/labsjdk-17-static-libs-linux.zip -d ${GRAALVM_SVM}/lib/static/linux-amd64/glibc/
+          rm ${{ env.GRAALVM_SVM }}/lib/static/linux-amd64/glibc/*.a
+          unzip -j ${{ github.workspace }}/labsjdk-17-static-libs-linux.zip -d ${{ env.GRAALVM_SVM }}/lib/static/linux-amd64/glibc/
         fi
-        echo >> ${GRAALVM_SVM}/release && echo "VENDOR=Gluon" >> ${GRAALVM_SVM}/release
-        zip -r ${{ github.workspace }}/vm/${GRAALVM_SVM}.zip ${GRAALVM_SVM}
+        echo >> ${{ env.GRAALVM_SVM }}/release && echo "VENDOR=Gluon" >> ${{ env.GRAALVM_SVM }}/release
+        zip -r ${{ github.workspace }}/vm/${{ env.GRAALVM_SVM }}.zip ${{ env.GRAALVM_SVM }}
 
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
         name: graalvm-zip-linux
         path: |
-          vm/${GRAALVM_SVM}.zip
+          vm/${{ env.GRAALVM_SVM }}.zip
 
   build-graalvm-darwin:
     needs:
@@ -188,15 +188,15 @@ jobs:
       working-directory: ./vm
       run: |
         cd ${{ steps.darwin-build-graalvm.outputs.graalvm-home-dir }}/../../..
-        mv `ls -1 | head -n1` ${GRAALVM_SVM}
-        echo >> ${GRAALVM_SVM}/release && echo "VENDOR=Gluon" >> ${GRAALVM_SVM}/Contents/Home/release
-        zip -r ${{ github.workspace }}/vm/${GRAALVM_SVM}.zip ${GRAALVM_SVM}
+        mv `ls -1 | head -n1` ${{ env.GRAALVM_SVM }}
+        echo >> ${{ env.GRAALVM_SVM }}/release && echo "VENDOR=Gluon" >> ${{ env.GRAALVM_SVM }}/Contents/Home/release
+        zip -r ${{ github.workspace }}/vm/${{ env.GRAALVM_SVM }}.zip ${{ env.GRAALVM_SVM }}
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
         name: graalvm-zip-darwin
         path: |
-          vm/${GRAALVM_SVM}.zip
+          vm/${{ env.GRAALVM_SVM }}.zip
 
   build-graalvm-windows:
     needs:
@@ -255,15 +255,15 @@ jobs:
     - name: Create distribution
       working-directory: ./vm
       run: |
-        move ${{ steps.windows-build-graalvm.outputs.graalvm-home-dir }} ${GRAALVM_SVM}
-        echo. >> ${GRAALVM_SVM}/release && echo VENDOR=Gluon >> ${GRAALVM_SVM}/release
-        Compress-Archive -Path ${GRAALVM_SVM} -DestinationPath ${GRAALVM_SVM}.zip
+        move ${{ steps.windows-build-graalvm.outputs.graalvm-home-dir }} ${{ env.GRAALVM_SVM }}
+        echo. >> ${{ env.GRAALVM_SVM }}/release && echo VENDOR=Gluon >> ${{ env.GRAALVM_SVM }}/release
+        Compress-Archive -Path ${{ env.GRAALVM_SVM }} -DestinationPath ${{ env.GRAALVM_SVM }}.zip
     - name: Archive distribution
       uses: actions/upload-artifact@v2
       with:
         name: graalvm-zip-windows
         path: |
-          vm/${GRAALVM_SVM}.zip
+          vm/${{ env.GRAALVM_SVM }}.zip
 
   create-release:
     runs-on: ubuntu-20.04
