@@ -1,3 +1,6 @@
+# Builds GraalVM for Linux, Windows and macOS, wiht JDK 11 and 17,
+# and replaces java static libraries on Linux 17 after building them with gcc 9.3
+
 name: Gluon Release
 
 on:
@@ -112,15 +115,17 @@ jobs:
     - name: Create distribution
       working-directory: ./vm
       run: |
+        export GRAALVM_SVM=graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
         cd ${{ steps.linux-build-graalvm.outputs.graalvm-home-dir }}/..
-        mv `ls -1 | head -n1` graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
+        mv `ls -1 | head -n1` $GRAALVM_SVM
         if [[ ${{ matrix.jdk }} == "17" ]]
         then
           echo "Replace static libs under linux-amd64/glibc"
-          rm graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/*.a
-          unzip -j ${{ github.workspace }}/labsjdk-17-static-libs-linux.zip -d graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}/lib/static/linux-amd64/glibc/
+          rm $GRAALVM_SVM/lib/static/linux-amd64/glibc/*.a
+          unzip -j ${{ github.workspace }}/labsjdk-17-static-libs-linux.zip -d $GRAALVM_SVM/lib/static/linux-amd64/glibc/
         fi
-        zip -r ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}
+        echo >> $GRAALVM_SVM/release && echo "VENDOR=Gluon" >> $GRAALVM_SVM/release
+        zip -r ${{ github.workspace }}/vm/graalvm-svm-java${{ matrix.jdk }}-linux-${{ needs.determine-version.outputs.version }}.zip $GRAALVM_SVM
 
     - name: Archive distribution
       uses: actions/upload-artifact@v2
