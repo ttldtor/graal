@@ -256,7 +256,7 @@ jobs:
       working-directory: ./vm
       run: |
         move ${{ steps.windows-build-graalvm.outputs.graalvm-home-dir }} ${{ env.GRAALVM_SVM }}
-        echo >> ${{ env.GRAALVM_SVM }}/release && echo VENDOR=Gluon >> ${{ env.GRAALVM_SVM }}/release
+        echo '' >> ${{ env.GRAALVM_SVM }}/release && echo VENDOR=Gluon >> ${{ env.GRAALVM_SVM }}/release
         Compress-Archive -Path ${{ env.GRAALVM_SVM }} -DestinationPath ${{ env.GRAALVM_SVM }}.zip
     - name: Archive distribution
       uses: actions/upload-artifact@v2
