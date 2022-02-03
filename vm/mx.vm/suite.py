@@ -66,7 +66,7 @@ suite = {
             },
             {
                 "name": "fastr",
-                "version": "91b7ede06ca44ad85c7d4d452b30c5302a547a21",
+                "version": "848aeb049ce3b3aeeb9da1ed37610ea478089b29",
                 "dynamic": True,
                 "urls": [
                     {"url": "https://github.com/oracle/fastr.git", "kind": "git"},
@@ -104,7 +104,14 @@ suite = {
                 "mx:JUNIT",
                 "org.graalvm.component.installer"
             ],
-            "javaCompliance" : "1.8+",
+            "requires" : ["java.logging"],  # required by several tests
+            "requiresConcealed" : {
+                "java.base" : [
+                    "jdk.internal.loader",  # required by ComponentInstallerTest
+                    "sun.net",  # required by DirectoryStorageTest
+                ],
+            },
+            "javaCompliance" : "11+",
             "checkstyle": "org.graalvm.component.installer",
             "license" : "GPLv2-CPE",
         },
