@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,24 +22,36 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package micro.benchmarks;
+package com.oracle.svm.core.reflect;
 
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Warmup;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
-/**
- * Base class for JMH benchmarks.
- */
-@Warmup(iterations = BenchmarkBase.Defaults.WARMUP_ITERATIONS, time = BenchmarkBase.Defaults.ITERATIONS_DURATION)
-@Measurement(iterations = BenchmarkBase.Defaults.MEASUREMENT_ITERATIONS, time = BenchmarkBase.Defaults.ITERATIONS_DURATION)
-@Fork(BenchmarkBase.Defaults.FORKS)
-public class BenchmarkBase {
+import com.oracle.svm.core.hub.DynamicHub;
 
-    public static class Defaults {
-        public static final int MEASUREMENT_ITERATIONS = 5;
-        public static final int WARMUP_ITERATIONS = 5;
-        public static final int ITERATIONS_DURATION = 5;
-        public static final int FORKS = 1;
-    }
+public interface ReflectionMetadataDecoder {
+    int NO_DATA = -1;
+
+    Field[] parseFields(DynamicHub declaringType, int index, boolean publicOnly, boolean reflectOnly);
+
+    Method[] parseMethods(DynamicHub declaringType, int index, boolean publicOnly, boolean reflectOnly);
+
+    Constructor<?>[] parseConstructors(DynamicHub declaringType, int index, boolean publicOnly, boolean reflectOnly);
+
+    Class<?>[] parseClasses(int index);
+
+    Target_java_lang_reflect_RecordComponent[] parseRecordComponents(DynamicHub declaringType, int index);
+
+    Parameter[] parseReflectParameters(Executable executable, byte[] encoding);
+
+    Object[] parseEnclosingMethod(int index);
+
+    byte[] parseByteArray(int index);
+
+    boolean isHidingMethod(int modifiers);
+
+    long getMetadataByteLength();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,24 +22,22 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package micro.benchmarks;
+package com.oracle.svm.reflect.target;
 
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Warmup;
+import org.graalvm.nativeimage.Platform;
+import org.graalvm.nativeimage.Platforms;
 
-/**
- * Base class for JMH benchmarks.
- */
-@Warmup(iterations = BenchmarkBase.Defaults.WARMUP_ITERATIONS, time = BenchmarkBase.Defaults.ITERATIONS_DURATION)
-@Measurement(iterations = BenchmarkBase.Defaults.MEASUREMENT_ITERATIONS, time = BenchmarkBase.Defaults.ITERATIONS_DURATION)
-@Fork(BenchmarkBase.Defaults.FORKS)
-public class BenchmarkBase {
+import com.oracle.svm.core.annotate.UnknownObjectField;
 
-    public static class Defaults {
-        public static final int MEASUREMENT_ITERATIONS = 5;
-        public static final int WARMUP_ITERATIONS = 5;
-        public static final int ITERATIONS_DURATION = 5;
-        public static final int FORKS = 1;
+public class ReflectionMetadataEncoding {
+    @UnknownObjectField(types = {byte[].class}) private byte[] encoding;
+
+    public byte[] getEncoding() {
+        return encoding;
+    }
+
+    @Platforms(Platform.HOSTED_ONLY.class)
+    public void setEncoding(byte[] encoding) {
+        this.encoding = encoding;
     }
 }
