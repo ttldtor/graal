@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,38 +22,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.truffle.tools.agentscript.impl;
+package com.oracle.svm.reflect.hosted;
 
-import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.library.ExportLibrary;
-import com.oracle.truffle.api.library.ExportMessage;
-import org.graalvm.polyglot.Value;
+import com.oracle.svm.core.annotate.RecomputeFieldValue;
 
-@SuppressWarnings({"static-method"})
-@ExportLibrary(InteropLibrary.class)
-final class RawObjectExtractor implements TruffleObject {
-    private Object obj;
+import jdk.vm.ci.meta.MetaAccessProvider;
+import jdk.vm.ci.meta.ResolvedJavaField;
 
-    private RawObjectExtractor() {
+public abstract class ReflectionMetadataComputer implements RecomputeFieldValue.CustomFieldValueComputer {
+
+    @Override
+    public final RecomputeFieldValue.ValueAvailability valueAvailability() {
+        return RecomputeFieldValue.ValueAvailability.AfterCompilation;
     }
 
-    static Object toRaw(Value v) {
-        if (v.getContext() == null) {
-            return v.as(Object.class);
-        }
-        final RawObjectExtractor extractor = new RawObjectExtractor();
-        v.getContext().asValue(extractor).execute(v);
-        return extractor.obj;
-    }
+    @Override
+    public abstract Object compute(MetaAccessProvider metaAccess, ResolvedJavaField original, ResolvedJavaField annotated, Object receiver);
 
-    @ExportMessage
-    static boolean isExecutable(RawObjectExtractor obj) {
-        return obj != null;
-    }
-
-    @ExportMessage
-    Object execute(Object[] args) {
-        return this.obj = args[0];
+    @Override
+    public final Class<?>[] types() {
+        return new Class<?>[]{byte[].class, null};
     }
 }
