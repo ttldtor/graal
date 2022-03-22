@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,17 +22,18 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.graalvm.compiler.truffle.compiler.phases;
 
-package com.oracle.svm.hosted;
+import org.graalvm.compiler.nodes.StructuredGraph;
+import org.graalvm.compiler.phases.BasePhase;
+import org.graalvm.compiler.truffle.compiler.TruffleTierContext;
 
-/**
- * ServiceLoader interface to allow post-processing tasks that should be performed right after
- * {@link NativeImageClassLoaderSupport} is created. For example, this is used to apply the
- * native-image classloader options after hosted options are accessible but before
- * {@link com.oracle.svm.hosted.ImageClassLoader#initAllClasses()} gets called.
- */
-public interface NativeImageClassLoaderPostProcessing {
+public final class ReportPerformanceWarningsPhase extends BasePhase<TruffleTierContext> {
 
-    void apply(NativeImageClassLoaderSupport support);
-
+    @Override
+    protected void run(StructuredGraph graph, TruffleTierContext context) {
+        if (context.handler != null) {
+            context.handler.reportPerformanceWarnings(context.compilable, graph);
+        }
+    }
 }

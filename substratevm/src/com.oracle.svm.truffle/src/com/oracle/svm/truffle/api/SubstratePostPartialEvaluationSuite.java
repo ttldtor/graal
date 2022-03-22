@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,17 +22,17 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package com.oracle.svm.truffle.api;
 
-package com.oracle.svm.hosted;
+import org.graalvm.compiler.truffle.compiler.PostPartialEvaluationSuite;
 
-/**
- * ServiceLoader interface to allow post-processing tasks that should be performed right after
- * {@link NativeImageClassLoaderSupport} is created. For example, this is used to apply the
- * native-image classloader options after hosted options are accessible but before
- * {@link com.oracle.svm.hosted.ImageClassLoader#initAllClasses()} gets called.
- */
-public interface NativeImageClassLoaderPostProcessing {
+import com.oracle.svm.core.graal.phases.DeadStoreRemovalPhase;
 
-    void apply(NativeImageClassLoaderSupport support);
+public class SubstratePostPartialEvaluationSuite extends PostPartialEvaluationSuite {
 
+    public SubstratePostPartialEvaluationSuite(boolean iterativePartialEscape) {
+        super(iterativePartialEscape);
+        appendPhase(new DeadStoreRemovalPhase());
+        appendPhase(new TruffleBoundaryPhase());
+    }
 }
