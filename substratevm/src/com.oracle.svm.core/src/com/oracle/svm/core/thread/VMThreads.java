@@ -369,7 +369,7 @@ public abstract class VMThreads {
     }
 
     @Uninterruptible(reason = "Called from uninterruptible code.", mayBeInlined = true)
-    private static boolean wasStartedByCurrentIsolate(IsolateThread thread) {
+    public static boolean wasStartedByCurrentIsolate(IsolateThread thread) {
         return StartedByCurrentIsolate.getAddress(thread).readByte(0) != 0;
     }
 
@@ -463,7 +463,7 @@ public abstract class VMThreads {
         cleanupExitedOsThreads();
     }
 
-    @Uninterruptible(reason = "Called from uninterruptible code, but still safe at this point.", calleeMustBe = false, mayBeInlined = true)
+    @Uninterruptible(reason = "Called from uninterruptible code, but still safe at this point.", calleeMustBe = false)
     private static void cleanupBeforeDetach(IsolateThread thread) {
         PlatformThreads.cleanupBeforeDetach(thread);
     }
