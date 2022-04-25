@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,27 +22,23 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.core.annotate;
+package org.graalvm.compiler.phases.common;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.graalvm.compiler.nodes.StructuredGraph.StageFlag;
+import org.graalvm.compiler.nodes.spi.Lowerable;
+import org.graalvm.compiler.nodes.spi.LoweringTool;
 
 /**
- * In an annotated method, all statically bindable callee methods are inlined (unless the callee is
- * annotated with {@link NeverInline}). The inlining is performed recursively. Be careful, it can
- * get out of control easily. If you need more fine-grained control over inlining, consider using
- * {@link AlwaysInlineSelectCallees}.
- *
- * This annotation exists primarily for testing purposes.
+ * A {@link LoweringPhase} used to lower {@link Lowerable} nodes when the graph is in
+ * {@link org.graalvm.compiler.nodes.spi.LoweringTool.StandardLoweringStage#MID_TIER} stage.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-public @interface AlwaysInlineAllCallees {
+public class MidTierLoweringPhase extends LoweringPhase {
 
-    /**
-     * Documents the reason why the annotated code must have all callees inlined.
-     */
-    String value();
+    public MidTierLoweringPhase(CanonicalizerPhase canonicalizer, boolean lowerOptimizableMacroNodes) {
+        super(canonicalizer, LoweringTool.StandardLoweringStage.MID_TIER, lowerOptimizableMacroNodes, StageFlag.MID_TIER_LOWERING);
+    }
+
+    public MidTierLoweringPhase(CanonicalizerPhase canonicalizer) {
+        super(canonicalizer, LoweringTool.StandardLoweringStage.MID_TIER, StageFlag.MID_TIER_LOWERING);
+    }
 }

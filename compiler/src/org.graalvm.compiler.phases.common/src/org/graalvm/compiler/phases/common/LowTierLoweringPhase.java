@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2020, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,33 +22,23 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package org.graalvm.compiler.phases.common;
 
-package com.oracle.svm.core.annotate;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.graalvm.compiler.nodes.StructuredGraph.StageFlag;
+import org.graalvm.compiler.nodes.spi.Lowerable;
+import org.graalvm.compiler.nodes.spi.LoweringTool;
 
 /**
- * In a method annotated with this, the methods specified in {@link #callees} are inlined, unless
- * they are annotated with {@link NeverInline}.
- * 
- * This annotation exists primarily for testing purposes.
+ * A {@link LoweringPhase} used to lower {@link Lowerable} nodes when the graph is in
+ * {@link org.graalvm.compiler.nodes.spi.LoweringTool.StandardLoweringStage#LOW_TIER} stage.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
-public @interface AlwaysInlineSelectCallees {
+public class LowTierLoweringPhase extends LoweringPhase {
 
-    /**
-     * Documents the reason why the annotated code must have all callees inlined.
-     */
-    String reason();
+    public LowTierLoweringPhase(CanonicalizerPhase canonicalizer, boolean lowerOptimizableMacroNodes) {
+        super(canonicalizer, LoweringTool.StandardLoweringStage.LOW_TIER, lowerOptimizableMacroNodes, StageFlag.LOW_TIER_LOWERING);
+    }
 
-    /**
-     * List of callee methods to always inline. These should be qualified names, e.g.
-     * {@code "java.lang.String.length()"} or
-     * {@code "java.lang.StringBuilder.append(java.lang.String)"}
-     */
-    String[] callees();
+    public LowTierLoweringPhase(CanonicalizerPhase canonicalizer) {
+        super(canonicalizer, LoweringTool.StandardLoweringStage.LOW_TIER, StageFlag.LOW_TIER_LOWERING);
+    }
 }
