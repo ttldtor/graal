@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2022, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,50 +38,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.api.frame;
+package com.oracle.truffle.polyglot;
 
-import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
+import static org.graalvm.polyglot.impl.AbstractPolyglotImpl.AbstractPolyglotHostService;
 
-/** @since 0.8 or earlier */
-public enum FrameSlotKind {
-    /** @since 0.8 or earlier */
-    Object,
-    /** @since 0.8 or earlier */
-    Long,
-    /** @since 0.8 or earlier */
-    Int,
-    /** @since 0.8 or earlier */
-    Double,
-    /** @since 0.8 or earlier */
-    Float,
-    /** @since 0.8 or earlier */
-    Boolean,
-    /** @since 0.8 or earlier */
-    Byte,
-    /** @since 0.8 or earlier */
-    Illegal,
-    /** @since 22.2 */
-    Static;
+import org.graalvm.polyglot.impl.AbstractPolyglotImpl;
 
-    /** @since 0.8 or earlier */
-    public final byte tag;
-
-    /** @since 0.8 or earlier */
-    FrameSlotKind() {
-        this.tag = (byte) ordinal();
+/**
+ * Polyglot host service is needed for polyglot isolates. In case it is used for a non-isolated
+ * engine, DefaultPolyglotHostService is used. Since there is no host side in terms of polyglot
+ * isolates, all operations are no-op.
+ */
+class DefaultPolyglotHostService extends AbstractPolyglotHostService {
+    DefaultPolyglotHostService(AbstractPolyglotImpl polyglot) {
+        super(polyglot);
     }
 
-    @CompilationFinal(dimensions = 1) private static final FrameSlotKind[] VALUES = values();
+    @Override
+    public void patch(AbstractPolyglotHostService otherService) {
+    }
 
-    /**
-     * Converts from the numeric representation used in the implementation of {@link Frame} to the
-     * {@link FrameSlotKind}.
-     *
-     * @param tag the numeric (byte) representation of the kind
-     * @return the FrameSlotKind
-     * @since 22.0
-     */
-    public static FrameSlotKind fromTag(byte tag) {
-        return VALUES[tag];
+    @Override
+    public void notifyClearExplicitContextStack(Object contextReceiver) {
+    }
+
+    @Override
+    public void notifyContextCancellingOrExiting(Object contextReceiver, boolean exit, int exitCode, boolean resourceLimit, String message) {
+    }
+
+    @Override
+    public void notifyContextClosed(Object contextReceiver, boolean cancelIfExecuting, boolean resourceLimit, String message) {
+    }
+
+    @Override
+    public void notifyEngineClosed(Object engineReceiver, boolean cancelIfExecuting) {
     }
 }
