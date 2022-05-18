@@ -202,6 +202,7 @@ class Tags(set):
 GraalTags = Tags([
     'helloworld',
     'helloworld_debug',
+    'helloworld_native',
     'helloworld_quickbuild',
     'debuginfotest',
     'debuginfotest_quickbuild',
@@ -360,6 +361,11 @@ def svm_gate_body(args, tasks):
         if t:
             with native_image_context(IMAGE_ASSERTION_FLAGS) as native_image:
                 image_demo_task(['-H:GenerateDebugInfo=1'], flightrecorder=False)
+
+    with Task('image demos native', tasks, tags=[GraalTags.helloworld_native]) as t:
+        if t:
+            with native_image_context(IMAGE_ASSERTION_FLAGS) as native_image:
+                image_demo_task(['-H:+NativeArchitecture'], flightrecorder=False)
 
     with Task('image demos quickbuild', tasks, tags=[GraalTags.helloworld_quickbuild]) as t:
         if t:
@@ -1081,7 +1087,7 @@ libgraal_jar_distributions = [
     'compiler:GRAAL_MANAGEMENT_LIBGRAAL']
 
 libgraal_build_args = [
-    '--initialize-at-build-time=org.graalvm.compiler,org.graalvm.libgraal,org.graalvm.jniutils,org.graalvm.graphio,com.oracle.truffle',
+    '--initialize-at-build-time=org.graalvm.compiler,org.graalvm.libgraal,com.oracle.truffle',
     '-H:-UseServiceLoaderFeature',
     '-H:+AllowFoldMethods',
     '-H:+ReportExceptionStackTraces',
