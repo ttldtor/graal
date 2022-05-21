@@ -1136,6 +1136,7 @@ suite = {
                     "com.oracle.svm.hosted                        to java.base",
                     "com.oracle.svm.hosted.agent                  to java.instrument",
                     "com.oracle.svm.truffle.api                   to org.graalvm.truffle",
+                    "com.oracle.svm.core.option                   to com.oracle.svm_enterprise.ml_dataset",
                     "* to org.graalvm.nativeimage.base,jdk.internal.vm.compiler,org.graalvm.nativeimage.driver,org.graalvm.nativeimage.configure,org.graalvm.nativeimage.librarysupport,org.graalvm.nativeimage.junitsupport,org.graalvm.nativeimage.llvm,org.graalvm.nativeimage.agent.jvmtibase,org.graalvm.nativeimage.agent.tracing,org.graalvm.nativeimage.agent.diagnostics,com.oracle.svm.svm_enterprise",
                 ],
                 "opens" : [
@@ -1205,6 +1206,7 @@ suite = {
                     ],
                 },
             },
+            "noMavenJavadoc": True,
         },
 
         "SVM_LIBFFI": {
@@ -1237,6 +1239,7 @@ suite = {
                     "com.oracle.svm.jvmtiagentbase.jvmti",
                 ],
             },
+            "maven": False,
         },
 
         "LIBRARY_SUPPORT": {
@@ -1324,6 +1327,7 @@ suite = {
                 "SVM",
             ],
             "defaultBuild": False,
+            "maven": False,
         },
 
         #
@@ -1378,6 +1382,7 @@ suite = {
                 "jdk.management",
               ],
             },
+            "maven": False,
         },
 
         "SVM_AGENT": {
@@ -1405,6 +1410,7 @@ suite = {
                 }
             },
             # vm: included as binary, tool descriptor intentionally not copied
+            "maven": False,
         },
 
         "SVM_DIAGNOSTICS_AGENT": {
@@ -1423,6 +1429,7 @@ suite = {
                     "com.oracle.svm.diagnosticsagent",
                 ],
             },
+            "maven": False,
         },
 
         "SVM_CONFIGURE": {
@@ -1442,6 +1449,7 @@ suite = {
                     "com.oracle.svm.configure",
                 ],
             },
+            "maven": False,
         },
 
         "NATIVE_IMAGE_BASE": {
@@ -1497,6 +1505,7 @@ suite = {
                 "com.oracle.graal.pointsto.typestate",
                 "com.oracle.graal.pointsto.infrastructure",
                 "com.oracle.graal.pointsto.flow.context.object",
+                "com.oracle.graal.pointsto.flow.context.bytecode",
               ],
               "requires": [
                 "java.management",
