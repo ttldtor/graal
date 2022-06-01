@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, 2017, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,27 +22,13 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.graal.pointsto.flow;
-
-import org.graalvm.compiler.graph.Node;
+package org.graalvm.tools.insight.heap.instrument;
 
 /**
- * Models the ExceptionObjectNode. It is a proxy type flow, i.e., it propagates the state of its
- * input, which in current implementation is the type flow of a sub-type of Throwable.
+ * Cache replacement policy.
  */
-public class ExceptionObjectTypeFlow extends ProxyTypeFlow {
+enum CacheReplacement {
 
-    public ExceptionObjectTypeFlow(Node source, TypeFlow<?> input) {
-        super(source, input);
-    }
-
-    @Override
-    public boolean canSaturate() {
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return "ExceptionObjectFlow<" + input + ">";
-    }
+    FLUSH,
+    LRU
 }
