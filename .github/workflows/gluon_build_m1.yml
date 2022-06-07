@@ -1,0 +1,98 @@
+# Builds GraalVM for Linux, Windows and macOS, wiht JDK 11 and 17,
+# and replaces java static libraries on Linux 17 after building them with gcc 9.3
+
+name: Gluon Release for M1
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  LANG: en_US.UTF-8
+
+jobs:
+  determine-version:
+    runs-on: ubuntu-20.04
+    outputs:
+      simpleTag: ${{ steps.fetchSimpleTag.outputs.tag }}
+      version: ${{ steps.fetchVersion.outputs.version }}
+    steps:
+    - id: fetchSimpleTag
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+    - id: fetchVersion
+      run: echo ::set-output name=version::$(echo $GITHUB_REF | sed -E "s/.*(gluon-.*-(dev|Final)).*/\1/g")
+
+  build-graalvm-darwin-m1:
+    needs:
+      - determine-version
+    runs-on: [self-hosted, macOS, X64]
+    defaults:
+      run:
+        shell: "/usr/bin/arch -arch arm64e /bin/bash -l {0}"
+    strategy:
+      matrix:
+        jdk: [11, 17]
+    env:
+      JDK: labsjdk-ce-${{ matrix.jdk }}
+      LABS_HOME: ${{ github.workspace }}/jdk
+      MX_PYTHON: python3.9
+      MX_PATH: ${{ github.workspace }}/mx
+      GRAALVM_SVM: graalvm-svm-java${{ matrix.jdk }}-darwin-m1-${{ needs.determine-version.outputs.version }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+    - uses: actions/checkout@v2
+      with:
+        repository: graalvm/mx.git
+        fetch-depth: 1
+        ref: master
+        path: ${{ env.MX_PATH }}
+    - uses: actions/cache@v1
+      with:
+        path: ~/.mx
+        key: ${{ runner.os }}-mx-${{ hashFiles('**/suite.py') }}
+        restore-keys: ${{ runner.os }}-mx-
+    - uses: actions/setup-java@v2
+      with:
+        distribution: 'temurin'
+        architecture: 'aarch64'
+        java-version: ${{ matrix.jdk }}
+    - name: Get JDK
+      run: |
+        mkdir jdk-dl
+        ${MX_PATH}/mx fetch-jdk --java-distribution ${JDK} --to jdk-dl --alias ${LABS_HOME}
+    - name: Build GraalVM
+      id: darwin-build-graalvm
+      env:
+        JAVA_HOME: ${{ env.LABS_HOME }}/Contents/Home
+        DISABLE_LIBPOLYGLOT: true
+        DISABLE_POLYGLOT: true
+        FORCE_BASH_LAUNCHERS: false
+      working-directory: ./vm
+      run: |
+        unset JAVA_HOME
+        export JAVA_HOME=${{ env.LABS_HOME }}/Contents/Home
+        export DISABLE_LIBPOLYGLOT=true
+        export DISABLE_POLYGLOT=true
+        export FORCE_BASH_LAUNCHERS=false
+        echo ${JAVA_HOME}
+        ${JAVA_HOME}/bin/java -version
+        echo >> GRAALVM-README.md && echo "TODO: use actual content" >> GRAALVM-README.md
+        ${MX_PATH}/mx --dy /substratevm build
+        GRAALVM_HOME=`${MX_PATH}/mx --dy /substratevm graalvm-home`
+        echo "::set-output name=graalvm-home-dir::$GRAALVM_HOME"
+    - name: Create distribution
+      working-directory: ./vm
+      run: |
+        cd ${{ steps.darwin-build-graalvm.outputs.graalvm-home-dir }}/../../..
+        mv `ls -1 | head -n1` ${{ env.GRAALVM_SVM }}
+        echo >> ${{ env.GRAALVM_SVM }}/Contents/Home/release && echo "VENDOR=Gluon" >> ${{ env.GRAALVM_SVM }}/Contents/Home/release
+        tar -czvf ${{ github.workspace }}/vm/${{ env.GRAALVM_SVM }}.tar.gz ${{ env.GRAALVM_SVM }}
+    - name: Archive distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: graalvm-zip-darwin-m1
+        path: |
+          vm/${{ env.GRAALVM_SVM }}.tar.gz
