@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,15 +22,27 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+package com.oracle.svm.hosted.code;
 
-package com.oracle.svm.util;
+import org.graalvm.nativeimage.ImageSingletons;
 
-public class ModuleSupportBase {
+import com.oracle.svm.hosted.meta.HostedMethod;
 
-    public static final String ENV_VAR_USE_MODULE_SYSTEM = "USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM";
+import jdk.vm.ci.code.TargetDescription;
 
-    public static final String PROPERTY_IMAGE_EXPLICITLY_ADDED_MODULES = "org.graalvm.nativeimage.module.addmods";
+public interface HostedDirectCallTrampolineSupport {
 
-    public static final boolean modulePathBuild = Boolean.parseBoolean(System.getenv().get(ENV_VAR_USE_MODULE_SYSTEM));
+    static HostedDirectCallTrampolineSupport singleton() {
+        return ImageSingletons.lookup(HostedDirectCallTrampolineSupport.class);
+    }
 
+    boolean mayNeedTrampolines();
+
+    int getMaxCallDistance();
+
+    int getTrampolineSize();
+
+    int getTrampolineAlignment();
+
+    byte[] createTrampoline(TargetDescription td, HostedMethod target, int trampolineStart);
 }
