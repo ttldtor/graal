@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,42 +38,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.object;
+package com.oracle.truffle.api.staticobject;
 
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.Shape;
+import java.util.Map;
 
-@SuppressWarnings("deprecation")
-public class BasicLayout extends DefaultLayout {
-    BasicLayout(LayoutStrategy strategy, int allowedImplicitCasts) {
-        super(DynamicObjectBasic.class, strategy, allowedImplicitCasts, DynamicObjectBasic.OBJECT_FIELD_LOCATIONS, DynamicObjectBasic.PRIMITIVE_FIELD_LOCATIONS);
+final class PodBasedShapeGenerator<T> extends ShapeGenerator<T> {
+    // Aliased by com_oracle_truffle_api_staticobject_PodBasedShapeGenerator
+    @SuppressWarnings("unused") //
+    final Class<?> storageSuperClass;
+
+    // Aliased by com_oracle_truffle_api_staticobject_PodBasedShapeGenerator
+    @SuppressWarnings("unused") //
+    final Class<T> storageFactoryInterface;
+
+    private PodBasedShapeGenerator(Class<?> storageSuperClass, Class<T> storageFactoryInterface) {
+        this.storageSuperClass = storageSuperClass;
+        this.storageFactoryInterface = storageFactoryInterface;
     }
 
-    public static LayoutImpl createLayoutImpl(com.oracle.truffle.api.object.Layout.Builder builder) {
-        Class<? extends DynamicObject> dynamicObjectClass = getType(builder);
-        if (dynamicObjectClass != null) {
-            return DefaultLayout.createCoreLayout(builder);
+    static <T> PodBasedShapeGenerator<T> getShapeGenerator(Class<?> storageSuperClass, Class<T> storageFactoryInterface) {
+        return new PodBasedShapeGenerator<>(storageSuperClass, storageFactoryInterface);
+    }
+
+    @Override
+    StaticShape<T> generateShape(StaticShape<T> parentShape, Map<String, StaticProperty> staticProperties, boolean safetyChecks, String storageClassName) {
+        if (parentShape == null || parentShape instanceof PodBasedStaticShape) {
+            return generateShape((PodBasedStaticShape<T>) parentShape, staticProperties, safetyChecks);
+        } else {
+            throw new IllegalArgumentException("Expected parent shape of type '" + PodBasedStaticShape.class.getName() + "'; got: " + parentShape);
         }
-        return new BasicLayout(DefaultStrategy.SINGLETON, implicitCastFlags(getAllowedImplicitCasts(builder)));
     }
 
-    @Override
-    public DynamicObject newInstance(Shape shape) {
-        return new DynamicObjectBasic(shape);
-    }
-
-    @Override
-    protected DynamicObject construct(Shape shape) {
-        return new DynamicObjectBasic(shape);
-    }
-
-    @Override
-    protected boolean isLegacyLayout() {
-        return true;
-    }
-
-    @Override
-    protected int getLongFieldSize() {
-        return 1;
+    // Substituted by com_oracle_truffle_api_staticobject_PodBasedShapeGenerator
+    @SuppressWarnings("unused")
+    private StaticShape<T> generateShape(PodBasedStaticShape<T> parentShape, Map<String, StaticProperty> staticProperties, boolean safetyChecks) {
+        throw new UnsupportedOperationException("This method must be susbtituted by a class in TruffleBaseFeature");
     }
 }

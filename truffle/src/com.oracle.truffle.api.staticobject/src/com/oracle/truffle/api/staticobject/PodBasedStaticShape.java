@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * The Universal Permissive License (UPL), Version 1.0
@@ -38,53 +38,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.oracle.truffle.object.basic.test;
+package com.oracle.truffle.api.staticobject;
 
-import org.junit.Assert;
-import org.junit.Test;
+@SuppressWarnings("unused")
+final class PodBasedStaticShape<T> extends StaticShape<T> {
+    // Aliased by com_oracle_truffle_api_staticobject_PodBasedStaticShape
+    private final Object pod;
 
-import com.oracle.truffle.api.object.DynamicObject;
-import com.oracle.truffle.api.object.DynamicObjectFactory;
-import com.oracle.truffle.api.object.DynamicObjectLibrary;
-import com.oracle.truffle.api.object.ObjectType;
-import com.oracle.truffle.api.object.Shape;
-
-@SuppressWarnings("deprecation")
-public class DynamicObjectFactoryTest {
-    private static final DynamicObjectLibrary LIBRARY = DynamicObjectLibrary.getUncached();
-
-    final com.oracle.truffle.api.object.Layout layout = com.oracle.truffle.api.object.Layout.newLayout().build();
-    final Shape rootShape = layout.createShape(new ObjectType());
-
-    @Test
-    public void testFactory() {
-        Shape shape = rootShape.defineProperty("x", 1, 0).defineProperty("y", 2, 0);
-        DynamicObjectFactory factory = shape.createFactory();
-
-        try {
-            factory.newInstance();
-            Assert.fail();
-        } catch (AssertionError e) {
-            Assert.assertEquals("0 arguments given but the factory takes 2: x, y", e.getMessage());
-        }
-
-        try {
-            factory.newInstance("only one argument");
-            Assert.fail();
-        } catch (AssertionError e) {
-            Assert.assertEquals("1 arguments given but the factory takes 2: x, y", e.getMessage());
-        }
-
-        DynamicObject object = factory.newInstance(3, 4);
-        Assert.assertEquals(3, LIBRARY.getOrDefault(object, "x", null));
-        Assert.assertEquals(4, LIBRARY.getOrDefault(object, "y", null));
-
-        try {
-            factory.newInstance(1, 2, 3);
-            Assert.fail();
-        } catch (AssertionError e) {
-            Assert.assertEquals("3 arguments given but the factory takes 2: x, y", e.getMessage());
-        }
+    private PodBasedStaticShape(Class<?> storageClass, boolean safetyChecks, Object pod) {
+        super(storageClass, safetyChecks);
+        this.pod = pod;
     }
 
+    // Aliased by com_oracle_truffle_api_staticobject_PodBasedStaticShape
+    static <T> PodBasedStaticShape<T> create(Class<?> generatedStorageClass, T factory, boolean safetyChecks, Object pod) {
+        PodBasedStaticShape<T> shape = new PodBasedStaticShape<>(generatedStorageClass, safetyChecks, pod);
+        shape.setFactory(factory);
+        return shape;
+    }
+
+    @Override
+    Object getStorage(Object obj, boolean primitive) {
+        return cast(obj, storageClass, true);
+    }
 }
