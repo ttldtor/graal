@@ -22,30 +22,15 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.hosted.classinitialization;
+package com.oracle.svm.core.jdk;
 
-import org.graalvm.collections.EconomicSet;
+import java.util.function.BooleanSupplier;
 
-final class ClassOrPackageConfig {
-    private final String name;
-    private final EconomicSet<String> reasons;
-    private final InitKind kind;
+import org.graalvm.compiler.serviceprovider.JavaVersionUtil;
 
-    ClassOrPackageConfig(String name, EconomicSet<String> reasons, InitKind kind) {
-        this.name = name;
-        this.reasons = reasons;
-        this.kind = kind;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public EconomicSet<String> getReasons() {
-        return reasons;
-    }
-
-    public InitKind getKind() {
-        return kind;
+public class JDK17OrEarlier implements BooleanSupplier {
+    @Override
+    public boolean getAsBoolean() {
+        return JavaVersionUtil.JAVA_SPEC <= 17;
     }
 }

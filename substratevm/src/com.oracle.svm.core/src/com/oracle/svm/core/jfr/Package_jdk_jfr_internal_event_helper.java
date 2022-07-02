@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2020, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,30 +22,25 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.hosted.classinitialization;
+package com.oracle.svm.core.jfr;
 
-import org.graalvm.collections.EconomicSet;
+import java.util.function.Function;
 
-final class ClassOrPackageConfig {
-    private final String name;
-    private final EconomicSet<String> reasons;
-    private final InitKind kind;
+import org.graalvm.compiler.serviceprovider.JavaVersionUtil;
+import org.graalvm.nativeimage.Platform;
+import org.graalvm.nativeimage.Platforms;
 
-    ClassOrPackageConfig(String name, EconomicSet<String> reasons, InitKind kind) {
-        this.name = name;
-        this.reasons = reasons;
-        this.kind = kind;
-    }
+import com.oracle.svm.core.annotate.TargetClass;
 
-    public String getName() {
-        return name;
-    }
+@Platforms(Platform.HOSTED_ONLY.class)
+public class Package_jdk_jfr_internal_event_helper implements Function<TargetClass, String> {
 
-    public EconomicSet<String> getReasons() {
-        return reasons;
-    }
-
-    public InitKind getKind() {
-        return kind;
+    @Override
+    public String apply(TargetClass annotation) {
+        if (JavaVersionUtil.JAVA_SPEC >= 19) {
+            return "jdk.jfr.internal.event." + annotation.className();
+        } else {
+            return "jdk.jfr.internal." + annotation.className();
+        }
     }
 }

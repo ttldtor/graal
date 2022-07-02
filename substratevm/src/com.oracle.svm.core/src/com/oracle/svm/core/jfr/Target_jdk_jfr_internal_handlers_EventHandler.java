@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, 2019, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2022, 2022, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,30 +22,11 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.oracle.svm.hosted.classinitialization;
+package com.oracle.svm.core.jfr;
 
-import org.graalvm.collections.EconomicSet;
+import com.oracle.svm.core.annotate.TargetClass;
+import com.oracle.svm.core.jdk.JDK17OrEarlier;
 
-final class ClassOrPackageConfig {
-    private final String name;
-    private final EconomicSet<String> reasons;
-    private final InitKind kind;
-
-    ClassOrPackageConfig(String name, EconomicSet<String> reasons, InitKind kind) {
-        this.name = name;
-        this.reasons = reasons;
-        this.kind = kind;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public EconomicSet<String> getReasons() {
-        return reasons;
-    }
-
-    public InitKind getKind() {
-        return kind;
-    }
+@TargetClass(className = "jdk.jfr.internal.handlers.EventHandler", onlyWith = JDK17OrEarlier.class)
+final class Target_jdk_jfr_internal_handlers_EventHandler {
 }
