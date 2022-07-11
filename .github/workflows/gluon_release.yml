@@ -152,6 +152,7 @@ jobs:
     strategy:
       matrix:
         jdk: [11, 17]
+        python-version: ['3.9']
     env:
       JDK: labsjdk-ce-${{ matrix.jdk }}
       LABS_HOME: ${{ github.workspace }}\jdk
@@ -183,6 +184,11 @@ jobs:
       uses: egor-tensin/vs-shell@v2
       with:
         arch: x64
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        architecture: x64        
     - name: Build GraalVM
       id: windows-build-graalvm
       env:
